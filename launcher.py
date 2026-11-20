@@ -21,6 +21,7 @@ os.chdir(BASE_DIR)
 sys.path.insert(0, BASE_DIR)
 
 from box_manager import export_box_package, import_box_package, reset_or_create_new_box
+from cloud_sync import full_bidirectional_sync, is_cloud_enabled
 from db import get_all_settings, get_db, init_db, set_setting
 
 
@@ -51,6 +52,16 @@ class EspadazoLauncherApp(tk.Tk):
         self.port = 8080
 
         init_db(self.local_ip)
+        try:
+            with get_db(write=True) as conn:
+                settings = get_all_settings(conn)
+                saved_pub = str(settings.get("public_url") or "").strip()
+                if not saved_pub or ".trycloudflare.com" in saved_pub:
+                    saved_pub = "https://espadazo-marino.vercel.app"
+                    set_setting(conn, "public_url", saved_pub)
+                self.public_url = saved_pub
+        except Exception:
+            self.public_url = "https://espadazo-marino.vercel.app"
         self._build_ui()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
@@ -154,11 +165,16 @@ class EspadazoLauncherApp(tk.Tk):
         )
         self.lbl_wifi.pack(anchor="w", pady=1)
 
+        pub_text = (
+            f"• Web / Nube 4G:  {self.public_url}"
+            if self.public_url
+            else "• Internet 4G: (se activa al abrir la caja)"
+        )
         self.lbl_public = tk.Label(
             self.links_card,
-            text="• Internet 4G: (se activa al abrir la caja)",
+            text=pub_text,
             font=("Consolas", 8),
-            fg="#E2E8F0",
+            fg="#38BDF8" if self.public_url else "#E2E8F0",
             bg="#1E293B",
         )
         self.lbl_public.pack(anchor="w", pady=1)
@@ -305,23 +321,40 @@ class EspadazoLauncherApp(tk.Tk):
             self.after(0, lambda: self._on_start_error("El servidor no respondió a tiempo."))
             return
 
-        # 3. Iniciar Túnel Cloudflare
-        cloudflared_bin = os.path.join(BASE_DIR, "cloudflared.exe")
-        if os.path.exists(cloudflared_bin):
-            try:
-                # Ocultar ventana de comandos en Windows (CREATE_NO_WINDOW)
-                creation_flags = 0x08000000 if sys.platform == "win32" else 0
-                self.tunnel_process = subprocess.Popen(
-                    [cloudflared_bin, "tunnel", "--url", f"http://localhost:{self.port}"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    text=True,
-                    bufsize=1,
-                    creationflags=creation_flags,
-                )
-                threading.Thread(target=self._watch_tunnel_output, daemon=True).start()
-            except Exception as te:
-                print(f"[WARN] No se pudo arrancar el tunel: {te}")
+        # 3. Sincronización Híbrida Cloud (Supabase) y URL pública permanente
+        try:
+            with get_db(write=True) as conn:
+                settings = get_all_settings(conn)
+                saved_pub = str(settings.get("public_url") or "").strip()
+                if not saved_pub or ".trycloudflare.com" in saved_pub:
+                    saved_pub = "https://espadazo-marino.vercel.app"
+                    set_setting(conn, "public_url", saved_pub)
+                self.public_url = saved_pub
+                if is_cloud_enabled(conn):
+                    full_bidirectional_sync(conn)
+        except Exception as se:
+            print(f"[WARN] Sincronización inicial cloud: {se}")
+
+        # 4. Mostrar URL permanente o iniciar Túnel Cloudflare si no hay URL pública permanente
+        if self.public_url and ".trycloudflare.com" not in self.public_url:
+            self.after(0, lambda u=self.public_url: self._update_public_url_ui(u))
+        else:
+            cloudflared_bin = os.path.join(BASE_DIR, "cloudflared.exe")
+            if os.path.exists(cloudflared_bin):
+                try:
+                    # Ocultar ventana de comandos en Windows (CREATE_NO_WINDOW)
+                    creation_flags = 0x08000000 if sys.platform == "win32" else 0
+                    self.tunnel_process = subprocess.Popen(
+                        [cloudflared_bin, "tunnel", "--url", f"http://localhost:{self.port}"],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        bufsize=1,
+                        creationflags=creation_flags,
+                    )
+                    threading.Thread(target=self._watch_tunnel_output, daemon=True).start()
+                except Exception as te:
+                    print(f"[WARN] No se pudo arrancar el tunel: {te}")
 
         self.after(0, self._on_start_success)
 
@@ -343,7 +376,7 @@ class EspadazoLauncherApp(tk.Tk):
                 break
 
     def _update_public_url_ui(self, url: str):
-        self.lbl_public.config(text=f"• Internet 4G:  {url}", fg="#38BDF8")
+        self.lbl_public.config(text=f"• Web / Nube 4G:  {url}", fg="#38BDF8")
 
     def _on_start_success(self):
         self.is_running = True
@@ -390,7 +423,10 @@ class EspadazoLauncherApp(tk.Tk):
         )
         self.btn_open_admin.config(state="disabled")
         self.btn_open_menu.config(state="disabled")
-        self.lbl_public.config(text="• Internet 4G: (se activa al abrir la caja)", fg="#E2E8F0")
+        if self.public_url and ".trycloudflare.com" not in self.public_url:
+            self.lbl_public.config(text=f"• Web / Nube 4G:  {self.public_url}", fg="#38BDF8")
+        else:
+            self.lbl_public.config(text="• Internet 4G: (se activa al abrir la caja)", fg="#E2E8F0")
 
     def _open_admin(self):
         webbrowser.open(f"http://localhost:{self.port}/admin")
