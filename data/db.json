@@ -1,0 +1,1050 @@
+{
+  "settings": {
+    "admin_pin": "1234",
+    "restaurant_name": "Espadazo Marino",
+    "phone": "51987654321",
+    "broadcast_msg": "Pesca del Día: Corvina & Lenguado Artesanal fresco directo de caleta.",
+    "host_ip": "192.168.0.100",
+    "port": 8080
+  },
+  "dishes": [
+    {
+      "id": "duo_espadazo",
+      "name": "Dúo Espadazo Popular",
+      "category": "duos",
+      "price": 55.0,
+      "img": "assets/duo_espadazo.webp",
+      "badge": "MÁS PEDIDO",
+      "desc": "El emblema de la casa: generoso Arroz con Mariscos al wok criollo con Ceviche en crema de rocoto fino.",
+      "options": [
+        "Ají Suave",
+        "Ají Medio",
+        "Ají Bravo"
+      ],
+      "published": true,
+      "images": [
+        "assets/duo_espadazo.webp",
+        "assets/gallery/duo_espadazo_2.webp",
+        "assets/gallery/duo_espadazo_3.webp",
+        "assets/gallery/duo_espadazo_4.webp",
+        "assets/gallery/duo_espadazo_5.webp"
+      ]
+    },
+    {
+      "id": "ceviche_simple",
+      "name": "Ceviche Clásico de Pescado",
+      "category": "ceviches",
+      "price": 32.0,
+      "img": "assets/ceviche_simple.webp",
+      "badge": "PESCA DEL DÍA",
+      "desc": "Cubos de pescado fresco curados al instante en limón sutil, cebolla morada crujiente, camote glaseado y choclo.",
+      "options": [
+        "Ají Suave",
+        "Ají Medio",
+        "Ají Bravo",
+        "Sin Ají"
+      ],
+      "published": true,
+      "images": [
+        "assets/ceviche_simple.webp",
+        "assets/gallery/ceviche_simple_2.webp",
+        "assets/gallery/ceviche_simple_3.webp",
+        "assets/gallery/ceviche_simple_4.webp",
+        "assets/gallery/ceviche_simple_5.webp"
+      ]
+    },
+    {
+      "id": "ceviche_mixto",
+      "name": "Ceviche Mixto Tradicional",
+      "category": "ceviches",
+      "price": 38.0,
+      "img": "assets/ceviche_mixto.webp",
+      "badge": "FAVORITO",
+      "desc": "Pescado fresco del litoral combinado con pulpo, calamar y langostinos en leche de tigre equilibrada.",
+      "options": [
+        "Ají Suave",
+        "Ají Medio",
+        "Ají Bravo",
+        "Sin Ají"
+      ],
+      "published": true,
+      "images": [
+        "assets/ceviche_mixto.webp",
+        "assets/gallery/ceviche_mixto_2.webp",
+        "assets/gallery/ceviche_mixto_3.webp",
+        "assets/gallery/ceviche_mixto_4.webp",
+        "assets/gallery/ceviche_mixto_5.webp"
+      ]
+    },
+    {
+      "id": "ceviche_rocoto",
+      "name": "Ceviche en Crema de Rocoto",
+      "category": "ceviches",
+      "price": 36.0,
+      "img": "assets/ceviche_rocoto.webp",
+      "badge": "ESPECIAL DE LA CASA",
+      "desc": "Pesca del día marinada al momento en crema suave de rocoto ahumado, limón de Olmos y chulpe caliente.",
+      "options": [
+        "Picor Suave",
+        "Picor Medio",
+        "Picor Bravo"
+      ],
+      "published": true,
+      "images": [
+        "assets/ceviche_rocoto.webp",
+        "assets/gallery/ceviche_rocoto_2.webp",
+        "assets/gallery/ceviche_rocoto_3.webp",
+        "assets/gallery/ceviche_rocoto_4.webp"
+      ]
+    },
+    {
+      "id": "leche_tigre",
+      "name": "Leche de Tigre Poderosa",
+      "category": "ceviches",
+      "price": 24.0,
+      "img": "assets/leche_tigre.webp",
+      "badge": "AL PASO",
+      "desc": "Copa concentrada con pesca del día, mariscos picados, canchita crocante y coronada con chicharrón crocante.",
+      "options": [
+        "Picor Medio",
+        "Bien Picante",
+        "Sin Picante"
+      ],
+      "published": true,
+      "images": [
+        "assets/leche_tigre.webp",
+        "assets/gallery/leche_tigre_2.webp",
+        "assets/gallery/leche_tigre_3.webp",
+        "assets/gallery/leche_tigre_4.webp",
+        "assets/gallery/leche_tigre_5.webp"
+      ]
+    },
+    {
+      "id": "causa_acevichada",
+      "name": "Causa Limeña Acevichada",
+      "category": "ceviches",
+      "price": 30.0,
+      "img": "assets/causa_acevichada.webp",
+      "badge": "FUSIÓN",
+      "desc": "Papa amarilla prensada al ají amarillo y limón, rellena de palta y coronada con ceviche clásico al punto.",
+      "options": [
+        "Tradicional"
+      ],
+      "published": true,
+      "images": [
+        "assets/causa_acevichada.webp",
+        "assets/gallery/causa_acevichada_2.webp",
+        "assets/gallery/causa_acevichada_3.webp",
+        "assets/gallery/causa_acevichada_4.webp",
+        "assets/gallery/causa_acevichada_5.webp"
+      ]
+    },
+    {
+      "id": "chicharron_pescado",
+      "name": "Chicharrón de Pescado Crocante",
+      "category": "chicharrones",
+      "price": 34.0,
+      "img": "assets/chicharron_pescado.webp",
+      "badge": "CROCANTE EXTREMO",
+      "desc": "Trozos de pescado blanco marinados en aderezo ligero y rebozados al punto oro. Servido con yucas y salsa tártara.",
+      "options": [
+        "Con Yucas Fritas",
+        "Con Papas Fritas"
+      ],
+      "published": true,
+      "images": [
+        "assets/chicharron_pescado.webp",
+        "assets/gallery/chicharron_pescado_2.webp",
+        "assets/gallery/chicharron_pescado_3.webp",
+        "assets/gallery/chicharron_pescado_4.webp",
+        "assets/gallery/chicharron_pescado_5.webp"
+      ]
+    },
+    {
+      "id": "chicharron_langostinos",
+      "name": "Chicharrón de Langostinos",
+      "category": "chicharrones",
+      "price": 39.0,
+      "img": "assets/chicharron_langostinos.webp",
+      "badge": "PREMIUM",
+      "desc": "Colas de langostinos seleccionados crocantes por fuera y jugosos por dentro. Acompañado de tártara y chifles.",
+      "options": [
+        "Con Tártara y Chifles"
+      ],
+      "published": true,
+      "images": [
+        "assets/chicharron_langostinos.webp",
+        "assets/gallery/chicharron_langostinos_2.webp",
+        "assets/gallery/chicharron_langostinos_3.webp",
+        "assets/gallery/chicharron_langostinos_4.webp",
+        "assets/gallery/chicharron_langostinos_5.webp"
+      ]
+    },
+    {
+      "id": "chicharron_papas",
+      "name": "Chicharrón Mixto con Papas",
+      "category": "chicharrones",
+      "price": 35.0,
+      "img": "assets/chicharron_papas.webp",
+      "badge": "FAMILIAR",
+      "desc": "Pescado y calamar crujientes acompañados de papas fritas doradas, salsa criolla y cremas artesanales.",
+      "options": [
+        "Papas Fritas",
+        "Yucas Doradas"
+      ],
+      "published": true,
+      "images": [
+        "assets/chicharron_papas.webp",
+        "assets/gallery/chicharron_papas_2.webp",
+        "assets/gallery/chicharron_papas_3.webp",
+        "assets/gallery/chicharron_papas_4.webp",
+        "assets/gallery/chicharron_papas_5.webp"
+      ]
+    },
+    {
+      "id": "pescado_frito",
+      "name": "Pescado Frito de Puerto",
+      "category": "chicharrones",
+      "price": 36.0,
+      "img": "assets/pescado_frito.webp",
+      "badge": "TRADICIONAL",
+      "desc": "Pescado fresco del día dorado al sartén con piel crocante, arroz blanco, yucas doradas y salsa criolla.",
+      "options": [
+        "Con Arroz y Yucas"
+      ],
+      "published": true,
+      "images": [
+        "assets/pescado_frito.webp",
+        "assets/gallery/pescado_frito_2.webp",
+        "assets/gallery/pescado_frito_3.webp",
+        "assets/gallery/pescado_frito_4.webp",
+        "assets/gallery/pescado_frito_5.webp"
+      ]
+    },
+    {
+      "id": "arroz_mariscos",
+      "name": "Arroz con Mariscos Especial",
+      "category": "arroces",
+      "price": 38.0,
+      "img": "assets/arroz_mariscos.webp",
+      "badge": "CLÁSICO CRIOLLO",
+      "desc": "Fuego vivo con fondo concentrado de mariscos, ají amarillo, cerveza negra, calamares, langostinos y queso parmesano.",
+      "options": [
+        "Al Wok Ahumado"
+      ],
+      "published": true,
+      "images": [
+        "assets/arroz_mariscos.webp",
+        "assets/gallery/arroz_mariscos_2.webp",
+        "assets/gallery/arroz_mariscos_3.webp",
+        "assets/gallery/arroz_mariscos_4.webp",
+        "assets/gallery/arroz_mariscos_5.webp"
+      ]
+    },
+    {
+      "id": "picante_mariscos",
+      "name": "Picante de Mariscos Criollo",
+      "category": "arroces",
+      "price": 37.0,
+      "img": "assets/picante_mariscos.webp",
+      "badge": "SABOR PROFUNDO",
+      "desc": "Guiso tradicional en salsa madre norteña con mariscos salteados, papa cocida y arroz con choclito.",
+      "options": [
+        "Picor Suave",
+        "Picor Medio"
+      ],
+      "published": true,
+      "images": [
+        "assets/picante_mariscos.webp",
+        "assets/gallery/picante_mariscos_2.webp",
+        "assets/gallery/picante_mariscos_3.webp",
+        "assets/gallery/picante_mariscos_4.webp",
+        "assets/gallery/picante_mariscos_5.webp"
+      ]
+    },
+    {
+      "id": "fuente_arroz_mariscos",
+      "name": "Fuente Familiar de Arroz con Mariscos",
+      "category": "fuentes",
+      "price": 78.0,
+      "img": "assets/fuente_arroz_mariscos.webp",
+      "badge": "PARA 3-4 PERSONAS",
+      "desc": "Fuente generosa para compartir en familia o amigos, cargada con abundante mixtura de mariscos al wok.",
+      "options": [
+        "Porción Familiar"
+      ],
+      "published": true,
+      "images": [
+        "assets/fuente_arroz_mariscos.webp",
+        "assets/gallery/fuente_arroz_mariscos_2.webp",
+        "assets/gallery/fuente_arroz_mariscos_3.webp",
+        "assets/gallery/fuente_arroz_mariscos_4.webp",
+        "assets/gallery/fuente_arroz_mariscos_5.webp"
+      ]
+    },
+    {
+      "id": "fuente_ceviche_rocoto",
+      "name": "Fuente Familiar Ceviche de Rocoto",
+      "category": "fuentes",
+      "price": 75.0,
+      "img": "assets/fuente_ceviche_rocoto.webp",
+      "badge": "PARA COMPARTIR",
+      "desc": "Gran fuente de ceviche fresco bañado en crema de rocoto de la casa, porción doble de camote y choclo desgranado.",
+      "options": [
+        "Picor Medio",
+        "Picor Bravo"
+      ],
+      "published": true,
+      "images": [
+        "assets/fuente_ceviche_rocoto.webp"
+      ]
+    },
+    {
+      "id": "chicha_morada",
+      "name": "Jarra de Chicha Morada Casera (1L)",
+      "category": "bebidas",
+      "price": 16.0,
+      "img": "assets/leche_tigre.webp",
+      "badge": "100% NATURAL",
+      "desc": "Elaborada diariamente con maíz morado de valle, piña madura, membrillo, canela y clavo de olor.",
+      "options": [
+        "Helada",
+        "Sin Helar"
+      ],
+      "published": true,
+      "images": [
+        "assets/leche_tigre.webp"
+      ]
+    },
+    {
+      "id": "maracuya_fresca",
+      "name": "Jarra de Maracuyá Helada (1L)",
+      "category": "bebidas",
+      "price": 16.0,
+      "img": "assets/duo_espadazo.webp",
+      "badge": "FRESCA",
+      "desc": "Pura fruta natural de maracuyá, balanceada con toque justo de dulzor y bien fría para acompañar pescados.",
+      "options": [
+        "Helada",
+        "Al Tiempo"
+      ],
+      "published": true,
+      "images": [
+        "assets/duo_espadazo.webp"
+      ]
+    },
+    {
+      "id": "dish_1794369756",
+      "name": "EJEMPLO-01",
+      "category": "combos",
+      "price": 100.0,
+      "img": "assets/uploads/dish_1794369731_d57e25.webp",
+      "images": [
+        "assets/uploads/dish_1794369731_d57e25.webp",
+        "assets/uploads/dish_1794369732_469e90.webp",
+        "assets/uploads/dish_1794369732_8782f4.webp",
+        "assets/uploads/dish_1794369732_f60fc2.webp",
+        "assets/uploads/dish_1794369733_a9e8cd.webp"
+      ],
+      "badge": "RECOMENDADO",
+      "desc": "RICO",
+      "options": [
+        "Ají Suave",
+        "Ají Medio",
+        "Ají Bravo"
+      ],
+      "published": true
+    }
+  ],
+  "tables": [
+    {
+      "id": "1",
+      "name": "Mesa 1",
+      "capacity": 4,
+      "status": "ocupada"
+    },
+    {
+      "id": "2",
+      "name": "Mesa 2",
+      "capacity": 2,
+      "status": "libre"
+    },
+    {
+      "id": "3",
+      "name": "Mesa 3",
+      "capacity": 4,
+      "status": "ocupada"
+    },
+    {
+      "id": "4",
+      "name": "Mesa 4",
+      "capacity": 6,
+      "status": "ocupada"
+    },
+    {
+      "id": "5",
+      "name": "Mesa 5",
+      "capacity": 4,
+      "status": "libre"
+    },
+    {
+      "id": "barra1",
+      "name": "Barra 1",
+      "capacity": 2,
+      "status": "libre"
+    },
+    {
+      "id": "barra2",
+      "name": "Barra 2",
+      "capacity": 2,
+      "status": "ocupada"
+    },
+    {
+      "id": "llevar",
+      "name": "Para Llevar",
+      "capacity": 0,
+      "status": "libre"
+    },
+    {
+      "id": "1794332840",
+      "name": "456",
+      "capacity": 4,
+      "status": "libre"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-101",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "12:15 PM",
+      "items": [
+        {
+          "name": "Dúo Espadazo Popular",
+          "option": "Ají: Medio",
+          "qty": 1,
+          "price": 55.0
+        },
+        {
+          "name": "Vaso Chicha Morada Helada",
+          "option": "Complemento",
+          "qty": 1,
+          "price": 7.0
+        }
+      ],
+      "total": 62.0,
+      "notes": "Ceviche bien helado por favor",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "08:29 PM"
+    },
+    {
+      "id": "ORD-102",
+      "table_id": "2",
+      "table_name": "Mesa 2",
+      "service_mode": "En Barra",
+      "time": "12:20 PM",
+      "items": [
+        {
+          "name": "Ceviche Mixto Tradicional",
+          "option": "Ají Suave",
+          "qty": 2,
+          "price": 38.0
+        },
+        {
+          "name": "Porción de Chifles Artesanales",
+          "option": "Complemento",
+          "qty": 1,
+          "price": 6.0
+        }
+      ],
+      "total": 82.0,
+      "notes": "Sin cebolla en un ceviche",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "08:28 PM"
+    },
+    {
+      "id": "ORD-103",
+      "table_id": "4",
+      "table_name": "Mesa 4",
+      "service_mode": "En Barra",
+      "time": "12:05 PM",
+      "items": [
+        {
+          "name": "Fuente Familiar de Arroz con Mariscos",
+          "option": "Porción Familiar",
+          "qty": 1,
+          "price": 78.0
+        },
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 94.0,
+      "notes": "",
+      "status": "entregado"
+    },
+    {
+      "id": "ORD-104",
+      "table_id": "barra2",
+      "table_name": "Barra 2",
+      "service_mode": "En Barra",
+      "time": "12:28 PM",
+      "items": [
+        {
+          "name": "Leche de Tigre Poderosa",
+          "option": "Bien Picante",
+          "qty": 1,
+          "price": 24.0
+        }
+      ],
+      "total": 24.0,
+      "notes": "Extra canchita",
+      "status": "entregado"
+    },
+    {
+      "id": "ORD-4776",
+      "table_id": "2",
+      "table_name": "Mesa 2",
+      "service_mode": "En Barra",
+      "time": "01:19 PM",
+      "items": [
+        {
+          "name": "Ceviche Mixto Tradicional",
+          "price": 38.0,
+          "qty": 1,
+          "option": "Picor Medio"
+        }
+      ],
+      "total": 38.0,
+      "notes": "",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "08:28 PM"
+    },
+    {
+      "id": "ORD-3101",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Mesa",
+      "time": "08:10 PM",
+      "timestamp": 1794359457.118434,
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "04:27 AM"
+    },
+    {
+      "id": "ORD-3102",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Mesa",
+      "time": "08:15 PM",
+      "timestamp": 1794359757.118434,
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "04:27 AM"
+    },
+    {
+      "id": "ORD-3103",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Mesa",
+      "time": "08:20 PM",
+      "timestamp": 1794360057.118434,
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "04:27 AM"
+    },
+    {
+      "id": "ORD-3104",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Mesa",
+      "time": "08:25 PM",
+      "timestamp": 1794360357.118434,
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "04:27 AM"
+    },
+    {
+      "id": "ORD-3106",
+      "table_id": "3",
+      "table_name": "Mesa 3",
+      "service_mode": "En Mesa",
+      "time": "08:30 PM",
+      "timestamp": 1794360657.118434,
+      "items": [
+        {
+          "name": "Jarra de Maracuyá Helada (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": false
+    },
+    {
+      "id": "ORD-3107",
+      "table_id": "3",
+      "table_name": "Mesa 3",
+      "service_mode": "En Mesa",
+      "time": "08:35 PM",
+      "timestamp": 1794360957.118434,
+      "items": [
+        {
+          "name": "Jarra de Maracuyá Helada (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": false
+    },
+    {
+      "id": "ORD-3108",
+      "table_id": "3",
+      "table_name": "Mesa 3",
+      "service_mode": "En Mesa",
+      "time": "08:40 PM",
+      "timestamp": 1794361257.118434,
+      "items": [
+        {
+          "name": "Jarra de Maracuyá Helada (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": false
+    },
+    {
+      "id": "ORD-3109",
+      "table_id": "3",
+      "table_name": "Mesa 3",
+      "service_mode": "En Mesa",
+      "time": "08:45 PM",
+      "timestamp": 1794361557.118434,
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": false
+    },
+    {
+      "id": "ORD-3105",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Mesa",
+      "time": "08:50 PM",
+      "timestamp": 1794361857.118434,
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "entregado",
+      "paid": true,
+      "paid_at": "04:27 AM"
+    },
+    {
+      "id": "ORD-3110",
+      "table_id": "3",
+      "table_name": "Mesa 3",
+      "service_mode": "En Mesa",
+      "time": "08:55 PM",
+      "timestamp": 1794362157.118434,
+      "items": [
+        {
+          "name": "Jarra de Maracuyá Helada (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "price": 16.0
+        }
+      ],
+      "total": 16.0,
+      "notes": "Simulación ronda cada 5 min",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7058",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "08:30 PM",
+      "timestamp": 1794447058.3712802,
+      "items": [
+        {
+          "name": "Ceviche Simple",
+          "price": 28.0,
+          "qty": 1
+        }
+      ],
+      "total": 28.0,
+      "notes": "",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7058",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "08:30 PM",
+      "timestamp": 1794447058.6443467,
+      "items": [
+        {
+          "name": "Ceviche Simple",
+          "price": 28.0,
+          "qty": 1
+        }
+      ],
+      "total": 28.0,
+      "notes": "",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7058",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "08:30 PM",
+      "timestamp": 1794447058.6598063,
+      "items": [
+        {
+          "name": "Ceviche Simple",
+          "price": 28.0,
+          "qty": 1
+        }
+      ],
+      "total": 28.0,
+      "notes": "",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7058",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "08:30 PM",
+      "timestamp": 1794447058.674715,
+      "items": [
+        {
+          "name": "Ceviche Simple",
+          "price": 28.0,
+          "qty": 1
+        }
+      ],
+      "total": 28.0,
+      "notes": "",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7058",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "08:30 PM",
+      "timestamp": 1794447058.692597,
+      "items": [
+        {
+          "name": "Ceviche Simple",
+          "price": 28.0,
+          "qty": 1
+        }
+      ],
+      "total": 28.0,
+      "notes": "",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7059",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "08:30 PM",
+      "timestamp": 1794447059.3910284,
+      "items": [
+        {
+          "name": "Ceviche Simple",
+          "price": 28.0,
+          "qty": 1
+        }
+      ],
+      "total": 28.0,
+      "notes": "",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7059",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "En Barra",
+      "time": "08:30 PM",
+      "timestamp": 1794447059.5706704,
+      "items": [
+        {
+          "name": "Ceviche Simple",
+          "price": 28.0,
+          "qty": 1
+        }
+      ],
+      "total": 28.0,
+      "notes": "",
+      "status": "pedido",
+      "paid": false
+    },
+    {
+      "id": "ORD-7990",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "service_mode": "salon",
+      "time": "08:46 PM",
+      "timestamp": 1794447990.9235535,
+      "items": [
+        {
+          "name": "Audit Dish 0",
+          "price": 25.0,
+          "qty": 1
+        }
+      ],
+      "total": 25.0,
+      "notes": "Concurrency Test 0",
+      "status": "pedido",
+      "paid": false
+    }
+  ],
+  "receipts": [
+    {
+      "id": "BOL-4813",
+      "number": "B001 - 00004813",
+      "issued_at": "10/11/2026 20:56:01",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "mode": "CONSUMO (MESA 1)",
+      "customer_name": "CLIENTES VARIOS",
+      "customer_doc": "00000000",
+      "customer_phone": "",
+      "payment_method": "YAPE / PLIN",
+      "op_number": "#OP-362161",
+      "hash": "01e5db0b8b",
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 5,
+          "qty_delivered": 4,
+          "qty_pending": 1,
+          "subtotal": 80.0,
+          "unit_price": 16.0
+        }
+      ],
+      "op_gravada": 67.8,
+      "igv": 12.2,
+      "total": 80.0
+    },
+    {
+      "id": "BOL-4814",
+      "number": "B001 - 00004814",
+      "issued_at": "10/11/2026 20:56:09",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "mode": "CONSUMO (MESA 1)",
+      "customer_name": "CLIENTES VARIOS",
+      "customer_doc": "00000000",
+      "customer_phone": "",
+      "payment_method": "YAPE / PLIN",
+      "op_number": "#OP-362169",
+      "hash": "001c7ef356",
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "unit_price": 16,
+          "subtotal": 16
+        }
+      ],
+      "op_gravada": 13.56,
+      "igv": 2.44,
+      "total": 16.0
+    },
+    {
+      "id": "BOL-4815",
+      "number": "B001 - 00004815",
+      "issued_at": "10/11/2026 20:59:27",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "mode": "CONSUMO (MESA 1)",
+      "customer_name": "CLIENTES VARIOS",
+      "customer_doc": "00000000",
+      "customer_phone": "",
+      "payment_method": "YAPE / PLIN",
+      "op_number": "#OP-362367",
+      "hash": "00a6af6f7b",
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "unit_price": 16,
+          "subtotal": 16
+        }
+      ],
+      "op_gravada": 13.56,
+      "igv": 2.44,
+      "total": 16.0
+    },
+    {
+      "id": "BOL-4816",
+      "number": "B001 - 00004816",
+      "issued_at": "10/11/2026 22:51:14",
+      "table_id": "3",
+      "table_name": "Mesa 3",
+      "mode": "CONSUMO (MESA 3)",
+      "customer_name": "CLIENTES VARIOS",
+      "customer_doc": "00000000",
+      "customer_phone": "",
+      "payment_method": "YAPE / PLIN",
+      "op_number": "#OP-369074",
+      "hash": "01fafbed65",
+      "items": [
+        {
+          "name": "Jarra de Maracuyá Helada (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "unit_price": 16,
+          "subtotal": 16
+        }
+      ],
+      "op_gravada": 13.56,
+      "igv": 2.44,
+      "total": 16.0
+    },
+    {
+      "id": "BOL-4817",
+      "number": "B001 - 00004817",
+      "issued_at": "10/11/2026 22:52:51",
+      "table_id": "3",
+      "table_name": "Mesa 3",
+      "mode": "CONSUMO (MESA 3)",
+      "customer_name": "CLIENTES VARIOS",
+      "customer_doc": "00000000",
+      "customer_phone": "",
+      "payment_method": "YAPE / PLIN",
+      "op_number": "#OP-369171",
+      "hash": "01ad5be201",
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 1,
+          "unit_price": 16,
+          "subtotal": 16
+        }
+      ],
+      "op_gravada": 13.56,
+      "igv": 2.44,
+      "total": 16.0
+    },
+    {
+      "id": "BOL-4818",
+      "number": "B001 - 00004818",
+      "issued_at": "11/11/2026 04:27:54",
+      "table_id": "1",
+      "table_name": "Mesa 1",
+      "mode": "CONSUMO (MESA 1)",
+      "customer_name": "CLIENTES VARIOS",
+      "customer_doc": "00000000",
+      "customer_phone": "913330912",
+      "payment_method": "EFECTIVO",
+      "op_number": "#OP-389274",
+      "hash": "0135f40e7e",
+      "items": [
+        {
+          "name": "Jarra de Chicha Morada Casera (1L)",
+          "option": "Helada",
+          "qty": 5,
+          "qty_delivered": 5,
+          "qty_pending": 0,
+          "subtotal": 80,
+          "unit_price": 16
+        }
+      ],
+      "op_gravada": 67.8,
+      "igv": 12.2,
+      "total": 80.0
+    }
+  ]
+}

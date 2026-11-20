@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espadazo Marino — Carta Virtual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('espadazo_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #F8F6F2;
+      --surface: #FFFFFF;
+      --surface-subtle: #F2EFE9;
+      --border: #E8E3DA;
+      --text-main: #1A1F26;
+      --text-muted: #64707D;
+      --primary: #C95332;
+      --primary-hover: #B04223;
+      --primary-light: #FBEFEA;
+      --accent-blue: #2B7A9E;
+      --green-wa: #25D366;
+      --green-wa-dark: #1EBE5D;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 18px;
+      --radius-full: 999px;
+      --shadow-sm: 0 2px 8px rgba(26,31,38, 0.04);
+      --shadow-md: 0 8px 24px rgba(26,31,38, 0.08);
+      --shadow-lg: 0 16px 40px rgba(26,31,38, 0.15);
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0B111A;
+      --surface: #151D2A;
+      --surface-subtle: #1C2638;
+      --border: #29384D;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --primary: #E05D38;
+      --primary-hover: #F06A45;
+      --primary-light: rgba(224, 93, 56, 0.18);
+      --accent-blue: #38BDF8;
+      --green-wa: #25D366;
+      --green-wa-dark: #1EBE5D;
+      --shadow-sm: 0 2px 8px rgba(0,0,0, 0.4);
+      --shadow-md: 0 8px 24px rgba(0,0,0, 0.55);
+      --shadow-lg: 0 16px 40px rgba(0,0,0, 0.7);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* SOLID SVG ICONS UTILITY */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-container {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .brand-logo {
+      height: 52px;
+      width: auto;
+      display: block;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-qr-view {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-qr-view:hover { background: var(--border); }
+
+    .btn-theme-toggle {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .btn-theme-toggle:hover {
+      background: var(--border);
+      transform: translateY(-1px);
+    }
+    .btn-theme-toggle .icon {
+      color: var(--accent-blue);
+    }
+    [data-theme="dark"] .btn-theme-toggle .icon {
+      color: #FBBF24;
+    }
+
+    /* DARK THEME STYLING OVERRIDES */
+    [data-theme="dark"] .navbar {
+      background: rgba(15, 23, 35, 0.95);
+      border-bottom-color: var(--border);
+    }
+    [data-theme="dark"] .hero-compact-card,
+    [data-theme="dark"] .cart-sidebar,
+    [data-theme="dark"] .dish-card,
+    [data-theme="dark"] .modal-content,
+    [data-theme="dark"] .qr-card {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .dish-thumb-wrap,
+    [data-theme="dark"] .modal-gallery-col {
+      background: #101722;
+    }
+    [data-theme="dark"] .dish-card.is-list .dish-thumb-wrap {
+      background: #101722;
+    }
+    [data-theme="dark"] .service-btn.active {
+      background: var(--surface);
+      color: var(--text-main);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    [data-theme="dark"] .view-toggle {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .view-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+    }
+    [data-theme="dark"] .search-input {
+      background: var(--surface);
+      color: var(--text-main);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .tabs-nav-btn {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .tab-btn {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    [data-theme="dark"] .tab-btn:hover {
+      color: var(--text-main);
+      border-color: var(--primary);
+    }
+    [data-theme="dark"] .tab-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFFFFF;
+    }
+    [data-theme="dark"] .context-input,
+    [data-theme="dark"] .modal-textarea {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .addon-pill {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .gift-badge {
+      background: rgba(224, 93, 56, 0.18);
+      color: #FF8A65;
+      border-color: rgba(224, 93, 56, 0.35);
+    }
+    [data-theme="dark"] .qr-table-chip-link {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .service-qr-badge {
+      background: rgba(37, 211, 102, 0.15);
+      border-color: rgba(37, 211, 102, 0.35);
+      color: #4ADE80;
+    }
+    [data-theme="dark"] .mobile-cart-bar {
+      background: rgba(15, 23, 35, 0.95);
+      border-top-color: var(--border);
+    }
+    [data-theme="dark"] .btn-qr-view svg {
+      fill: var(--text-main);
+    }
+
+    .service-switch {
+      display: flex;
+      background: var(--surface-subtle);
+      padding: 3px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+    }
+    .service-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .service-btn.active {
+      background: #FFFFFF;
+      color: var(--text-main);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .nav-cart-trigger {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #FFF;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* MAIN TWO-COLUMN CONTAINER */
+    .main-wrapper {
+      max-width: 1260px;
+      margin: 20px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 370px;
+      gap: 24px;
+      align-items: start;
+    }
+    .left-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    /* HERO COMPACT PROMO (REDUCED HEIGHT) */
+    .hero-compact-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      box-shadow: var(--shadow-sm);
+      min-height: 220px;
+    }
+    .hero-thumb-wrap {
+      position: relative;
+      background: #111;
+      height: 100%;
+      min-height: 220px;
+    }
+    .hero-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .hero-badge-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(20, 26, 33, 0.9);
+      color: #FFF;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .hero-stock-tag {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(201, 83, 50, 0.95);
+      color: #FFF;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+
+    .hero-details {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .promo-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .promo-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .promo-title {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.15;
+    }
+    .price-box {
+      background: var(--primary-light);
+      border: 1px solid rgba(201, 83, 50, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .price-sub {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+    .price-val {
+      font-family: var(--font-heading);
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .promo-features {
+      list-style: none;
+      margin: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .promo-features li {
+      font-size: 0.78rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .gift-badge {
+      background: #FFF7ED;
+      color: #C2410C;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      border: 1px solid #FFEDD5;
+    }
+
+    .promo-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+    .promo-pills {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .pill-btn {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pill-btn.active {
+      background: var(--primary);
+      color: #FFF;
+      border-color: var(--primary);
+    }
+    .btn-hero-add {
+      background: var(--primary);
+      color: #FFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 9px 16px;
+      font-family: var(--font-heading);
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-hero-add:hover { background: var(--primary-hover); }
+
+    /* SEARCH + VIEW TOGGLE TOOLBAR */
+    .catalog-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+    .view-toggle {
+      display: inline-flex;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 3px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .view-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .view-btn.active {
+      background: var(--text-main);
+      color: #FFFFFF;
+    }
+    .service-qr-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ECFDF5;
+      color: #15803D;
+      border: 1px solid #86EFAC;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .search-input {
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 10px 18px 10px 42px;
+      font-size: 0.85rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--primary); }
+    .search-icon-pos {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    /* STICKY TABS */
+    .tabs-wrapper {
+      position: sticky;
+      top: 73px;
+      background: var(--bg);
+      padding: 6px 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tabs-nav-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      flex-shrink: 0;
+      transition: all 0.2s;
+      z-index: 2;
+    }
+    .tabs-nav-btn:hover {
+      background: var(--text-main);
+      color: #FFFFFF;
+      border-color: var(--text-main);
+    }
+    .tabs-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+      user-select: none;
+      cursor: grab;
+      padding: 4px 2px;
+      flex: 1;
+    }
+    .tabs-scroll:active { cursor: grabbing; }
+    .tabs-scroll::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      white-space: nowrap;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 8px 16px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .tab-btn:hover {
+      color: var(--text-main);
+      border-color: var(--text-main);
+    }
+    .tab-btn.active {
+      background: var(--text-main);
+      color: #FFF;
+      border-color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(26,31,38,0.15);
+    }
+
+    /* DISHES GRID */
+    .dishes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .dish-card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .dish-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    .dish-thumb-wrap {
+      position: relative;
+      width: 100%;
+      height: 190px;
+      background: #EAE6DE;
+      overflow: hidden;
+    }
+    .dish-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .dish-card:hover .dish-thumb { transform: scale(1.05); }
+    .dish-badge-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(20, 26, 33, 0.9);
+      color: #FFF;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .dish-badge-top.chef { background: var(--primary); }
+    .dish-badge-top.best { background: #D97706; }
+    .dish-photo-count-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.84);
+      color: #FFFFFF;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* FORMATO LISTA DELGADO */
+    .dishes-grid.list-view {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .dish-card.is-list {
+      flex-direction: row;
+      align-items: center;
+      min-height: 64px;
+      border-radius: 10px;
+    }
+    .dish-card.is-list .dish-thumb-wrap {
+      width: 64px;
+      height: 64px;
+      min-height: 64px;
+      flex-shrink: 0;
+      background: #F5F2EC;
+    }
+    .dish-card.is-list .dish-thumb {
+      object-fit: contain;
+      padding: 2px;
+    }
+    .dish-card.is-list .dish-photo-count-badge {
+      bottom: 3px;
+      right: 3px;
+      padding: 1px 5px;
+      font-size: 0.56rem;
+    }
+    .dish-card.is-list .dish-body {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 12px;
+      min-width: 0;
+    }
+    .dish-card.is-list .dish-list-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .dish-card.is-list .dish-header {
+      justify-content: flex-start;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1px;
+    }
+    .dish-card.is-list .dish-title {
+      font-size: 0.88rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dish-card.is-list .dish-desc {
+      min-height: 0;
+      margin-bottom: 0;
+      font-size: 0.72rem;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dish-card.is-list .dish-controls {
+      border-top: none;
+      padding-top: 0;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .dish-card.is-list .dish-price {
+      font-size: 0.96rem;
+    }
+    .dish-card.is-list .btn-add-cart {
+      padding: 5px 11px;
+      font-size: 0.72rem;
+    }
+    .qr-table-locked-box {
+      background: #ECFDF5;
+      border: 1.5px solid #86EFAC;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      user-select: none;
+    }
+    .qr-locked-head {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #15803D;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 3px;
+    }
+    .qr-locked-name {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #14532D;
+    }
+    .qr-locked-sub {
+      font-size: 0.68rem;
+      color: #166534;
+      margin-top: 2px;
+    }
+    @media (max-width: 600px) {
+      .dish-card.is-list .dish-thumb-wrap { width: 58px; height: 58px; min-height: 58px; }
+      .dish-card.is-list .dish-body { padding: 6px 10px; gap: 8px; }
+      .dish-card.is-list .dish-controls { gap: 6px; }
+      .dish-card.is-list .dish-opt-summary { display: none; }
+      .catalog-toolbar { flex-wrap: wrap; }
+    }
+
+    .dish-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+    }
+    .dish-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .dish-title {
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.25;
+    }
+    .dish-price {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+    .dish-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 10px;
+      min-height: 38px;
+    }
+
+    .dish-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+    }
+    .dish-opt-summary {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+    .btn-add-cart {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .btn-add-cart:hover {
+      background: var(--primary);
+      color: #FFF;
+      border-color: var(--primary);
+    }
+
+    /* RIGHT STICKY SIDEBAR (TU BANDEJA) */
+    .cart-sidebar {
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 85px;
+    }
+    .cart-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cart-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cart-badge-count {
+      background: var(--primary);
+      color: #FFF;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+    }
+
+    .order-context-box {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .context-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+    .context-input {
+      width: 100%;
+      background: #FFF;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      font-family: var(--font-body);
+      outline: none;
+    }
+    .context-input:focus { border-color: var(--primary); }
+
+    .cart-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 270px;
+      overflow-y: auto;
+      margin-bottom: 14px;
+      padding-right: 2px;
+    }
+    .cart-empty-text {
+      text-align: center;
+      padding: 26px 10px;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border);
+    }
+    .cart-item-name { font-weight: 700; color: var(--text-main); }
+    .cart-item-opt { font-size: 0.68rem; color: var(--text-muted); }
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .qty-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      font-weight: 800;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-btn:hover { background: var(--text-main); color: #FFF; }
+    .cart-item-price {
+      font-weight: 800;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    .addons-box {
+      background: var(--surface-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .addons-title {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .addons-pills {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .addon-pill {
+      background: #FFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .addon-pill:hover { border-color: var(--primary); color: var(--primary); }
+
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 10px 0;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .total-val { color: var(--primary); }
+
+    .btn-confirm-wa {
+      width: 100%;
+      background: var(--green-wa);
+      color: #FFF;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 13px;
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-confirm-wa:hover {
+      background: var(--green-wa-dark);
+      transform: translateY(-2px);
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 14, 18, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-content {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      max-width: 500px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    .modal-content.modal-dish-horizontal {
+      max-width: 840px;
+      width: 95%;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      overflow: hidden;
+    }
+    .modal-gallery-col {
+      display: flex;
+      flex-direction: column;
+      background: #F5F2EC;
+      border-right: 1px solid var(--border);
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(15, 23, 42, 0.65);
+      color: #FFF;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-img-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      height: auto;
+      position: relative;
+      background: #F5F2EC;
+      overflow: hidden;
+    }
+    .modal-photo-counter {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.78);
+      color: #FFFFFF;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(15, 23, 42, 0.62);
+      color: #FFFFFF;
+      font-size: 1.2rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .modal-nav-btn:hover { background: rgba(15, 23, 42, 0.9); }
+    .modal-nav-btn.prev { left: 10px; }
+    .modal-nav-btn.next { right: 10px; }
+    .modal-thumbs-strip {
+      background: #FAF8F4;
+      border-top: 1px solid var(--border);
+      padding: 10px 12px;
+    }
+    .modal-gallery-thumbs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .modal-gallery-thumb {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      height: auto;
+      border-radius: 8px;
+      object-fit: contain;
+      padding: 2px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      opacity: 0.72;
+      transition: all 0.15s;
+      background: #FFFFFF;
+    }
+    .modal-gallery-thumb:hover { opacity: 1; }
+    .modal-gallery-thumb.active {
+      border-color: var(--primary);
+      opacity: 1;
+      box-shadow: 0 2px 8px rgba(201, 83, 50, 0.25);
+    }
+    .modal-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      padding: 6px;
+    }
+    .modal-body {
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      max-height: 92vh;
+    }
+    @media (max-width: 780px) {
+      .modal-content.modal-dish-horizontal {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+        overflow-y: auto;
+      }
+      .modal-gallery-col {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .modal-body { max-height: none; padding: 18px; }
+    }
+    .qr-table-switch-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+    }
+    .qr-table-chip-link {
+      background: #F8F6F2;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .qr-table-chip-link:hover, .qr-table-chip-link.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFFFFF;
+    }
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .modal-price {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .modal-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .modal-sec-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    .modal-textarea {
+      width: 100%;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-size: 0.8rem;
+      font-family: var(--font-body);
+      outline: none;
+      margin-bottom: 16px;
+      resize: vertical;
+    }
+
+    /* FOOTER */
+    .menu-footer {
+      background: #141A21;
+      color: #E2E8F0;
+      padding: 44px 20px 24px;
+      border-top: 1px solid #2D3748;
+    }
+    .footer-container {
+      max-width: 1260px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid #2D3748;
+    }
+    .footer-col h4 {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      color: #FFF;
+    }
+    .footer-col p, .footer-col li {
+      font-size: 0.8rem;
+      color: #94A3B8;
+      line-height: 1.6;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-payment-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .pay-badge {
+      background: #1E293B;
+      color: #CBD5E1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .footer-bottom {
+      max-width: 1260px;
+      margin: 20px auto 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: #64748B;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn-cfg {
+      background: #1E293B;
+      color: #CBD5E1;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* MOBILE CART BOTTOM BAR */
+    .mobile-cart-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+      z-index: 99;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .main-wrapper { grid-template-columns: 1fr; }
+      .cart-sidebar { display: none; }
+      .cart-sidebar.mobile-open {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        border-radius: 20px 20px 0 0;
+        z-index: 101;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 -8px 30px rgba(0,0,0,0.25);
+      }
+      .nav-cart-trigger { display: flex; }
+      .mobile-cart-bar { display: flex; }
+      .dishes-grid { grid-template-columns: 1fr; }
+      .hero-compact-card { grid-template-columns: 1fr; }
+      .hero-thumb-wrap { min-height: 180px; }
+      .footer-container { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .footer-container { grid-template-columns: 1fr; }
+      .btn-theme-toggle .theme-text { display: none; }
+      .btn-theme-toggle { padding: 8px 10px; }
+      .btn-qr-view { padding: 8px 10px; font-size: 0.74rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR (Sin cinta superior de horario) -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-wrap">
+        <img src="assets/logo.svg" alt="Espadazo Marino" class="brand-logo" id="mainBrandLogo">
+      </a>
+
+      <div class="nav-actions">
+        <button class="btn-theme-toggle" id="btnThemeToggle" onclick="toggleTheme()" title="Cambiar a Modo Noche / Modo Día">
+          <span class="icon theme-icon-moon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.3 2a10 10 0 0 0-1.9 20 10 10 0 0 0 9.8-7.7 8.3 8.3 0 0 1-7.9-12.3z"/></svg>
+          </span>
+          <span class="icon theme-icon-sun" style="display:none;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+          </span>
+          <span class="theme-text">Modo Noche</span>
+        </button>
+        <button class="btn-qr-view" onclick="openQrModal()">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#1A1F26"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 0h2v3h-2v-3zm2 3h2v2h-2v-2zm-2 2h3v3h-3v-3zm3 0h3v3h-3v-3z"/></svg>
+          </span>
+          QR Mesa
+        </button>
+
+        <div class="service-switch" id="publicServiceSwitch">
+          <button class="service-btn active" id="btnNavDelivery" onclick="setServiceMode('Delivery')">Delivery</button>
+          <button class="service-btn" id="btnNavLlevar" onclick="setServiceMode('Para Llevar')">Para Llevar</button>
+        </div>
+        <div class="service-qr-badge" id="qrHeaderBadge" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg>
+          <span id="qrHeaderTableLabel">Mesa QR</span>
+        </div>
+
+        <button class="nav-cart-trigger" onclick="toggleCartMobile()">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          </span>
+          <span id="navCartTotal">S/ 0.00</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN TWO-COLUMN LAYOUT (OFERTA + CARTA A LA IZQUIERDA, BANDEJA A LA DERECHA) -->
+  <div class="main-wrapper">
+    
+    <!-- LEFT COLUMN -->
+    <div class="left-content">
+      
+      <!-- HERO COMPACT PROMO (ALTURA REDUCIDA) -->
+      <section class="hero-compact-card">
+        <div class="hero-thumb-wrap">
+          <img src="assets/duo_espadazo.jpg" alt="Dúo Espadazo Popular" class="hero-thumb">
+          <div class="hero-badge-tag">OFERTA ESPECIAL</div>
+          <div class="hero-stock-tag">18 DISPONIBLES</div>
+        </div>
+
+        <div class="hero-details">
+          <div>
+            <div class="promo-top-row">
+              <div>
+                <div class="promo-eyebrow">Combo Emblemático N° 1</div>
+                <h2 class="promo-title">Dúo Espadazo Popular</h2>
+              </div>
+              <div class="price-box">
+                <div class="price-sub">Promo</div>
+                <div class="price-val">S/ 55.00</div>
+              </div>
+            </div>
+
+            <ul class="promo-features">
+              <li>
+                <span class="icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#1EBE5D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+                <strong>Arroz con Mariscos al wok</strong> (Porción completa)
+              </li>
+              <li>
+                <span class="icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#1EBE5D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </span>
+                <strong>Ceviche fresco en crema de rocoto</strong> y chulpe
+              </li>
+              <li>
+                <span class="gift-badge">GRATIS</span>
+                01 Vaso 12oz de Chicha Morada o Maracuyá helada
+              </li>
+            </ul>
+          </div>
+
+          <div class="promo-controls-row">
+            <div class="promo-pills" id="heroAjiPills">
+              <button class="pill-btn active" onclick="selectHeroAji('Medio', this)">Ají Medio</button>
+              <button class="pill-btn" onclick="selectHeroAji('Suave', this)">Suave</button>
+              <button class="pill-btn" onclick="selectHeroAji('Bravo', this)">Bravo</button>
+              <button class="pill-btn" onclick="selectHeroAji('Sin Ají', this)">Sin Ají</button>
+            </div>
+
+            <button class="btn-hero-add" onclick="addHeroPromo()">
+              <span class="icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              </span>
+              <span>Agregar Promo</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEARCH BAR + VIEW TOGGLE (TARJETAS / LISTA) -->
+      <div class="catalog-toolbar">
+        <div class="search-box">
+          <span class="icon search-icon-pos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#8896A6"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Buscar platillo o ingrediente (ej. rocoto, langostinos, mixto...)" oninput="handleSearch()">
+        </div>
+        <div class="view-toggle" role="group" aria-label="Formato de vista">
+          <button class="view-btn active" id="btnViewCards" onclick="setViewMode('cards')" title="Ver en Tarjetas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
+            Tarjetas
+          </button>
+          <button class="view-btn" id="btnViewList" onclick="setViewMode('list')" title="Ver en Lista">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h2v2H3V5zm4 0h14v2H7V5zM3 11h2v2H3v-2zm4 0h14v2H7v-2zM3 17h2v2H3v-2zm4 0h14v2H7v-2z"/></svg>
+            Lista
+          </button>
+        </div>
+      </div>
+
+      <!-- STICKY CATEGORIES FILTER (DESLIZABLE DE LADO A LADO) -->
+      <nav class="tabs-wrapper">
+        <button class="tabs-nav-btn" onclick="scrollTabs(-180)" aria-label="Desplazar a la izquierda">
+          <span class="icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </span>
+        </button>
+
+        <div class="tabs-scroll" id="categoriesScroll">
+          <button class="tab-btn active" onclick="filterCategory('todos', this)">Todos los Platillos</button>
+          <button class="tab-btn" onclick="filterCategory('duos', this)">Combos & Dúos</button>
+          <button class="tab-btn" onclick="filterCategory('ceviches', this)">Ceviches al Paso</button>
+          <button class="tab-btn" onclick="filterCategory('chicharrones', this)">Chicharrones</button>
+          <button class="tab-btn" onclick="filterCategory('arroces', this)">Wok & Arroces</button>
+          <button class="tab-btn" onclick="filterCategory('fuentes', this)">Fuentes para Compartir</button>
+          <button class="tab-btn" onclick="filterCategory('bebidas', this)">Bebidas Caseras</button>
+        </div>
+
+        <button class="tabs-nav-btn" onclick="scrollTabs(180)" aria-label="Desplazar a la derecha">
+          <span class="icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </span>
+        </button>
+      </nav>
+
+      <!-- DISHES GRID (SIN TIEMPOS DE DURACIÓN) -->
+      <section class="dishes-grid" id="dishesGrid">
+        <!-- Generado vía JS -->
+      </section>
+
+    </div>
+
+    <!-- RIGHT STICKY COLUMN (TU BANDEJA - ACOMPAÑA TODO EL RATO) -->
+    <aside class="cart-sidebar" id="cartSidebar">
+      <div class="cart-title-row">
+        <div class="cart-title">
+          <span class="icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#C95332"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 16H5V5h2v3h10V5h2v14z"/></svg>
+          </span>
+          <span>Tu Bandeja</span>
+          <span class="cart-badge-count" id="cartBadgeCount">0</span>
+        </div>
+        <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);" id="cartServiceLabel">Delivery</span>
+      </div>
+
+      <!-- Contexto QR Local (Mesa vinculada NO editable) -->
+      <div class="qr-table-locked-box" id="qrTableLockedBox" style="display:none;">
+        <div class="qr-locked-head">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg>
+          Mesa vinculada por QR (Solo lectura)
+        </div>
+        <div class="qr-locked-name" id="qrLockedTableName">Mesa asignada</div>
+        <div class="qr-locked-sub">Tu pedido llegará directamente a esta mesa.</div>
+      </div>
+
+      <!-- Contexto Carta Pública (Delivery / Para Llevar) -->
+      <div class="order-context-box" id="publicContextBox">
+        <label class="context-label" id="contextInputLabel">Datos para Delivery (Nombre, Teléfono y Dirección):</label>
+        <input type="text" class="context-input" id="customerContextInput" placeholder="Ej: María Gómez - 987654321 - Av. Larco 420">
+      </div>
+
+      <div class="cart-items-list" id="cartItemsList">
+        <div class="cart-empty-text">
+          Tu bandeja está vacía.<br>
+          <small>Elige tus platos favoritos para armar tu pedido.</small>
+        </div>
+      </div>
+
+      <!-- COMPLEMENTOS RÁPIDOS -->
+      <div class="addons-box">
+        <div class="addons-title">+ Complementos directos de la barra</div>
+        <div class="addons-pills">
+          <button class="addon-pill" onclick="addQuickItem('Porción de Chifles Artesanales', 6)">+ Chifles S/ 6</button>
+          <button class="addon-pill" onclick="addQuickItem('Canchita Chulpe Caliente', 4)">+ Cancha S/ 4</button>
+          <button class="addon-pill" onclick="addQuickItem('Vaso Chicha Morada Helada', 7)">+ Chicha S/ 7</button>
+        </div>
+      </div>
+
+      <div class="summary-total">
+        <span>Total Estimado:</span>
+        <span class="total-val" id="cartTotalVal">S/ 0.00</span>
+      </div>
+
+      <button class="btn-confirm-wa" onclick="sendOrderWhatsApp()">
+        <span class="icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm0 18.06c-1.52 0-3-.41-4.3-1.19l-.31-.18-3.19.84.85-3.11-.2-.32a8.16 8.16 0 0 1-1.25-4.36c0-4.52 3.68-8.2 8.2-8.2 2.19 0 4.25.85 5.8 2.4 1.55 1.55 2.4 3.61 2.4 5.8 0 4.52-3.68 8.2-8.2 8.2zm4.49-6.14c-.25-.12-1.46-.72-1.68-.8-.23-.09-.39-.12-.56.12-.17.25-.64.8-.79.97-.14.17-.29.19-.54.07-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.4-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1s.9 2.43 1.03 2.6c.12.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.31z"/></svg>
+        </span>
+        <span>CONFIRMAR POR WHATSAPP</span>
+      </button>
+      <div style="display:flex; align-items:center; justify-content:center; gap:5px; font-size:0.68rem; color:var(--text-muted); margin-top:8px;">
+        <span class="icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#64707D"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+        </span>
+        <span>Pedido directo con cocina • Sin comisiones</span>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- MOBILE FLOATING CART BAR -->
+  <div class="mobile-cart-bar" id="mobileCartBar">
+    <div onclick="toggleCartMobile()" style="cursor:pointer;">
+      <div style="font-size:0.75rem; color:var(--text-muted);">Ver Bandeja (<span id="mobileCount">0</span> platos):</div>
+      <div style="font-size:1.25rem; font-weight:800; color:var(--primary);" id="mobileTotalVal">S/ 0.00</div>
+    </div>
+    <button class="btn-confirm-wa" style="width:auto; padding:10px 18px;" onclick="sendOrderWhatsApp()">
+      <span class="icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm0 18.06c-1.52 0-3-.41-4.3-1.19l-.31-.18-3.19.84.85-3.11-.2-.32a8.16 8.16 0 0 1-1.25-4.36c0-4.52 3.68-8.2 8.2-8.2 2.19 0 4.25.85 5.8 2.4 1.55 1.55 2.4 3.61 2.4 5.8 0 4.52-3.68 8.2-8.2 8.2zm4.49-6.14c-.25-.12-1.46-.72-1.68-.8-.23-.09-.39-.12-.56.12-.17.25-.64.8-.79.97-.14.17-.29.19-.54.07-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.4-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1s.9 2.43 1.03 2.6c.12.17 1.77 2.7 4.28 3.79.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.31z"/></svg>
+      </span>
+      <span>Pedir al WhatsApp</span>
+    </button>
+  </div>
+
+  <!-- DISH DETAIL MODAL (HORIZONTAL + GALERÍA CUADRADA 1:1 COMPLETA) -->
+  <div class="modal-overlay" id="dishModal">
+    <div class="modal-content modal-dish-horizontal">
+      <button class="modal-close" onclick="closeDishModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+      <div class="modal-gallery-col">
+        <div class="modal-img-wrap">
+          <img src="" id="modalImg" class="modal-img" alt="Platillo">
+          <span class="modal-photo-counter" id="modalPhotoCounter" style="display:none;">1 / 5 fotos</span>
+          <button class="modal-nav-btn prev" id="modalPrevBtn" style="display:none;" onclick="stepModalGallery(-1)" aria-label="Foto anterior">&#8249;</button>
+          <button class="modal-nav-btn next" id="modalNextBtn" style="display:none;" onclick="stepModalGallery(1)" aria-label="Foto siguiente">&#8250;</button>
+        </div>
+        <div class="modal-thumbs-strip" id="modalThumbsStrip" style="display:none;">
+          <div class="modal-gallery-thumbs" id="modalGalleryThumbs"></div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div>
+          <h3 class="modal-title" id="modalTitle">Nombre del Platillo</h3>
+          <div class="modal-price" id="modalPrice">S/ 0.00</div>
+          <p class="modal-desc" id="modalDesc">Descripción completa del plato con todos sus ingredientes.</p>
+
+          <div class="modal-sec-title">Personaliza tu preparación:</div>
+          <div class="promo-pills" id="modalOptionsPills" style="margin-bottom:14px;"></div>
+
+          <div class="modal-sec-title">Instrucciones especiales para cocina (opcional):</div>
+          <textarea class="modal-textarea" id="modalNotes" rows="2" placeholder="Ej: Poca cebolla, ají aparte, bien crocante..."></textarea>
+        </div>
+
+        <button class="btn-confirm-wa" id="btnModalAdd" onclick="confirmModalAdd()">
+          <span class="icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          </span>
+          <span>Agregar a mi Bandeja</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR CODE MODAL VINCULADO A MESA O SELECTOR DE MESAS -->
+  <div class="modal-overlay" id="qrModal">
+    <div class="modal-content" style="max-width:460px; text-align:center; padding:24px;">
+      <button class="modal-close" onclick="closeQrModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+      <div style="margin-bottom:8px;">
+        <img src="assets/logo.svg" style="height:44px; width:auto;" alt="Espadazo Marino">
+      </div>
+      <h3 id="qrModalTitleCarta" style="font-family:var(--font-heading); font-size:1.25rem; margin-bottom:4px;">Código QR para Mesas</h3>
+      <p id="qrModalSubtitleCarta" style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">
+        Cada mesa del local tiene su propia carta vinculada mediante su código QR.
+      </p>
+      <div style="background:#FFF; padding:10px; border:2px dashed var(--border); border-radius:14px; display:inline-block; margin-bottom:12px; box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+        <img id="qrModalImgCarta" src="QR_MESA_ESPADAZO_MARINO.png?v=4" style="width:100%; max-width:260px; height:auto; display:block; border-radius:8px;" alt="QR Espadazo Marino">
+      </div>
+      <div>
+        <a id="qrModalDownloadCarta" href="QR_MESA_ESPADAZO_MARINO.png" download class="btn-confirm-wa" style="text-decoration:none; display:inline-flex; width:auto; padding:10px 18px; font-size:0.84rem;">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          </span>
+          Descargar Tarjeta QR
+        </a>
+      </div>
+      <div id="qrTablesSwitchWrap" style="display:none; margin-top:14px;">
+        <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.04em;">
+          Ver Carta Vinculada por Mesa (QR Local):
+        </div>
+        <div class="qr-table-switch-grid" id="qrTablesSwitchGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="menu-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4>Espadazo Marino</h4>
+        <p>Pesca fresca del litoral directo al fuego vivo. Respeto por el corte, limón sutil exprimido al momento y despacho implacable en barra.</p>
+        <p style="margin-top:10px; color:#38BDF8;">Barra Marina Artesanal</p>
+      </div>
+      <div class="footer-col">
+        <h4>Horario & Servicio</h4>
+        <p><strong>Almuerzos Diurnos:</strong><br>11:30 AM — 5:00 PM<br>Lunes a Domingo continuo.</p>
+        <p style="margin-top:6px; font-size:0.75rem; color:#94A3B8;">Atención por orden de llegada y pedidos para llevar.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Canal de Pedidos</h4>
+        <p>Recepción directa en cocina. Envía tu pedido y recógelo listo sin esperar en cola.</p>
+        <p style="margin-top:6px;"><strong>WhatsApp:</strong> <span id="footerPhoneDisplay">+51 987 654 321</span></p>
+        <div class="footer-payment-badges">
+          <span class="pay-badge">YAPE</span>
+          <span class="pay-badge">PLIN</span>
+          <span class="pay-badge">VISA / MC</span>
+          <span class="pay-badge">EFECTIVO</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Sellos de Calidad</h4>
+        <ul>
+          <li><strong>Cadena de frío:</strong> 2°C a 4°C garantizada.</li>
+          <li><strong>100% Limón Sutil:</strong> Exprimido al instante, sin reposo.</li>
+          <li><strong>Wok Marino:</strong> Fuego vivo a alta temperatura.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 Espadazo Marino — Cocina del Mar. Todos los derechos reservados. • Sistema creado por <strong>The Frog S.A.C</strong></div>
+      <div>
+        <button class="btn-cfg" onclick="configureWhatsApp()">
+          <span class="icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#CBD5E1"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          </span>
+          Configurar WhatsApp
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // BASE DE DATOS DE PLATILLOS (Sin duración de tiempo)
+    let dishes = [
+      {
+        id: 'duo_espadazo',
+        name: 'Dúo Espadazo Popular',
+        category: 'duos',
+        price: 55.00,
+        img: 'assets/duo_espadazo.jpg',
+        badge: 'MÁS PEDIDO',
+        badgeType: 'chef',
+        desc: 'El emblema de la casa: generoso Arroz con Mariscos al wok criollo con Ceviche en crema de rocoto fino.',
+        options: ['Ají Suave', 'Ají Medio', 'Ají Bravo']
+      },
+      {
+        id: 'ceviche_simple',
+        name: 'Ceviche Clásico de Pescado',
+        category: 'ceviches',
+        price: 32.00,
+        img: 'assets/ceviche_simple.jpg',
+        badge: 'PESCA DEL DÍA',
+        badgeType: 'best',
+        desc: 'Cubos de pescado fresco curados al instante en limón sutil, cebolla morada crujiente, camote glaseado y choclo.',
+        options: ['Ají Suave', 'Ají Medio', 'Ají Bravo', 'Sin Ají']
+      },
+      {
+        id: 'ceviche_mixto',
+        name: 'Ceviche Mixto Tradicional',
+        category: 'ceviches',
+        price: 38.00,
+        img: 'assets/ceviche_mixto.jpg',
+        badge: 'FAVORITO',
+        badgeType: 'best',
+        desc: 'Pescado fresco del litoral combinado con pulpo, calamar y langostinos en leche de tigre equilibrada.',
+        options: ['Ají Suave', 'Ají Medio', 'Ají Bravo', 'Sin Ají']
+      },
+      {
+        id: 'ceviche_rocoto',
+        name: 'Ceviche en Crema de Rocoto',
+        category: 'ceviches',
+        price: 36.00,
+        img: 'assets/ceviche_rocoto.jpg',
+        badge: 'ESPECIAL DE LA CASA',
+        badgeType: 'chef',
+        desc: 'Pesca del día marinada al momento en crema suave de rocoto ahumado, limón de Olmos y chulpe caliente.',
+        options: ['Picor Suave', 'Picor Medio', 'Picor Bravo']
+      },
+      {
+        id: 'leche_tigre',
+        name: 'Leche de Tigre Poderosa',
+        category: 'ceviches',
+        price: 24.00,
+        img: 'assets/leche_tigre.jpg',
+        badge: 'AL PASO',
+        badgeType: 'best',
+        desc: 'Copa concentrada con pesca del día, mariscos picados, canchita crocante y coronada con chicharrón crocante.',
+        options: ['Picor Medio', 'Bien Picante', 'Sin Picante']
+      },
+      {
+        id: 'causa_acevichada',
+        name: 'Causa Limeña Acevichada',
+        category: 'ceviches',
+        price: 30.00,
+        img: 'assets/causa_acevichada.jpg',
+        badge: 'FUSIÓN',
+        badgeType: 'best',
+        desc: 'Papa amarilla prensada al ají amarillo y limón, rellena de palta y coronada con ceviche clásico al punto.',
+        options: ['Tradicional']
+      },
+      {
+        id: 'chicharron_pescado',
+        name: 'Chicharrón de Pescado Crocante',
+        category: 'chicharrones',
+        price: 34.00,
+        img: 'assets/chicharron_pescado.jpg',
+        badge: 'CROCANTE EXTREMO',
+        badgeType: 'chef',
+        desc: 'Trozos de pescado blanco marinados en aderezo ligero y rebozados al punto oro. Servido con yucas y salsa tártara.',
+        options: ['Con Yucas Fritas', 'Con Papas Fritas']
+      },
+      {
+        id: 'chicharron_langostinos',
+        name: 'Chicharrón de Langostinos',
+        category: 'chicharrones',
+        price: 39.00,
+        img: 'assets/chicharron_langostinos.jpg',
+        badge: 'PREMIUM',
+        badgeType: 'chef',
+        desc: 'Colas de langostinos seleccionados crocantes por fuera y jugosos por dentro. Acompañado de tártara y chifles.',
+        options: ['Con Tártara y Chifles']
+      },
+      {
+        id: 'chicharron_papas',
+        name: 'Chicharrón Mixto con Papas',
+        category: 'chicharrones',
+        price: 35.00,
+        img: 'assets/chicharron_papas.jpg',
+        badge: 'FAMILIAR',
+        badgeType: 'best',
+        desc: 'Pescado y calamar crujientes acompañados de papas fritas doradas, salsa criolla y cremas artesanales.',
+        options: ['Papas Fritas', 'Yucas Doradas']
+      },
+      {
+        id: 'pescado_frito',
+        name: 'Pescado Frito de Puerto',
+        category: 'chicharrones',
+        price: 36.00,
+        img: 'assets/pescado_frito.jpg',
+        badge: 'TRADICIONAL',
+        badgeType: 'best',
+        desc: 'Pescado fresco del día dorado al sartén con piel crocante, arroz blanco, yucas doradas y salsa criolla.',
+        options: ['Con Arroz y Yucas']
+      },
+      {
+        id: 'arroz_mariscos',
+        name: 'Arroz con Mariscos Especial',
+        category: 'arroces',
+        price: 38.00,
+        img: 'assets/arroz_mariscos.jpg',
+        badge: 'CLÁSICO CRIOLLO',
+        badgeType: 'chef',
+        desc: 'Fuego vivo con fondo concentrado de mariscos, ají amarillo, cerveza negra, calamares, langostinos y queso parmesano.',
+        options: ['Al Wok Ahumado']
+      },
+      {
+        id: 'picante_mariscos',
+        name: 'Picante de Mariscos Criollo',
+        category: 'arroces',
+        price: 37.00,
+        img: 'assets/picante_mariscos.jpg',
+        badge: 'SABOR PROFUNDO',
+        badgeType: 'best',
+        desc: 'Guiso tradicional en salsa madre norteña con mariscos salteados, papa cocida y arroz con choclito.',
+        options: ['Picor Suave', 'Picor Medio']
+      },
+      {
+        id: 'fuente_arroz_mariscos',
+        name: 'Fuente Familiar de Arroz con Mariscos',
+        category: 'fuentes',
+        price: 78.00,
+        img: 'assets/fuente_arroz_mariscos.jpg',
+        badge: 'PARA 3-4 PERSONAS',
+        badgeType: 'chef',
+        desc: 'Fuente generosa para compartir en familia o amigos, cargada con abundante mixtura de mariscos al wok.',
+        options: ['Porción Familiar']
+      },
+      {
+        id: 'fuente_ceviche_rocoto',
+        name: 'Fuente Familiar Ceviche de Rocoto',
+        category: 'fuentes',
+        price: 75.00,
+        img: 'assets/fuente_ceviche_rocoto.jpg',
+        badge: 'PARA COMPARTIR',
+        badgeType: 'best',
+        desc: 'Gran fuente de ceviche fresco bañado en crema de rocoto de la casa, porción doble de camote y choclo desgranado.',
+        options: ['Picor Medio', 'Picor Bravo']
+      },
+      {
+        id: 'chicha_morada',
+        name: 'Jarra de Chicha Morada Casera (1L)',
+        category: 'bebidas',
+        price: 16.00,
+        img: 'assets/leche_tigre.jpg',
+        badge: '100% NATURAL',
+        badgeType: 'best',
+        desc: 'Elaborada diariamente con maíz morado de valle, piña madura, membrillo, canela y clavo de olor.',
+        options: ['Helada', 'Sin Helar']
+      },
+      {
+        id: 'maracuya_fresca',
+        name: 'Jarra de Maracuyá Helada (1L)',
+        category: 'bebidas',
+        price: 16.00,
+        img: 'assets/duo_espadazo.jpg',
+        badge: 'FRESCA',
+        badgeType: 'best',
+        desc: 'Pura fruta natural de maracuyá, balanceada con toque justo de dulzor y bien fría para acompañar pescados.',
+        options: ['Helada', 'Al Tiempo']
+      }
+    ];
+
+    // ESTADO
+    let cart = [];
+    let currentService = 'Delivery';
+    let heroAji = 'Medio';
+    let currentCategory = 'todos';
+    let viewMode = localStorage.getItem('espadazo_view_mode') || 'cards';
+    let modalSelectedDish = null;
+    let modalSelectedOption = '';
+    let modalGalleryImages = [];
+    let modalGalleryIdx = 0;
+    let qrLockedTableName = '';
+
+    // WhatsApp Phone
+    let waPhone = localStorage.getItem('espadazo_wa_phone') || "51987654321";
+    document.getElementById('footerPhoneDisplay').innerText = `+${waPhone}`;
+
+    function configureWhatsApp() {
+      const newPhone = prompt('Ingresa el número de WhatsApp con código de país (ejemplo: 51987654321):', waPhone);
+      if (newPhone && newPhone.trim().length >= 8) {
+        waPhone = newPhone.replace(/\D/g, '');
+        localStorage.setItem('espadazo_wa_phone', waPhone);
+        document.getElementById('footerPhoneDisplay').innerText = `+${waPhone}`;
+        alert('Teléfono de WhatsApp actualizado correctamente.');
+      }
+    }
+
+    function setServiceMode(mode) {
+      if (urlTableId) return; // En local por QR la mesa queda fijada y no se cambia a otra modalidad
+      currentService = mode;
+      const btnDel = document.getElementById('btnNavDelivery');
+      const btnLlev = document.getElementById('btnNavLlevar');
+      if (btnDel) btnDel.classList.toggle('active', mode === 'Delivery');
+      if (btnLlev) btnLlev.classList.toggle('active', mode === 'Para Llevar');
+      document.getElementById('cartServiceLabel').innerText = mode;
+
+      const lbl = document.getElementById('contextInputLabel');
+      const inp = document.getElementById('customerContextInput');
+      if (!lbl || !inp) return;
+      if (mode === 'Delivery') {
+        lbl.innerText = 'Datos para Delivery (Nombre, Teléfono y Dirección):';
+        inp.placeholder = 'Ej: María Gómez - 987654321 - Av. Larco 420';
+      } else {
+        lbl.innerText = 'Recojo en Local (Nombre, Teléfono y Hora aprox.):';
+        inp.placeholder = 'Ej: Juan Pérez - 987654321 - Paso en 20 min';
+      }
+    }
+
+    function setViewMode(mode) {
+      viewMode = (mode === 'list') ? 'list' : 'cards';
+      localStorage.setItem('espadazo_view_mode', viewMode);
+      const bCards = document.getElementById('btnViewCards');
+      const bList = document.getElementById('btnViewList');
+      if (bCards) bCards.classList.toggle('active', viewMode === 'cards');
+      if (bList) bList.classList.toggle('active', viewMode === 'list');
+      applyFilters();
+    }
+
+    function selectHeroAji(level, btn) {
+      heroAji = level;
+      document.querySelectorAll('#heroAjiPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function addHeroPromo() {
+      addItemToCart('Dúo Espadazo Popular', 55.00, `Ají: ${heroAji} • Chicha Gratis`);
+    }
+
+    function addQuickItem(name, price) {
+      addItemToCart(name, price, 'Complemento de Barra');
+    }
+
+    function addItemToCart(name, price, option) {
+      const existing = cart.find(it => it.name === name && it.option === option);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ name, price, option, qty: 1 });
+      }
+      renderCart();
+    }
+
+    function changeQty(index, delta) {
+      cart[index].qty += delta;
+      if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      const listEl = document.getElementById('cartItemsList');
+      const badgeCount = document.getElementById('cartBadgeCount');
+      const totalVal = document.getElementById('cartTotalVal');
+      const navCartTotal = document.getElementById('navCartTotal');
+      const mobileTotalVal = document.getElementById('mobileTotalVal');
+      const mobileCount = document.getElementById('mobileCount');
+
+      const totalItems = cart.reduce((acc, it) => acc + it.qty, 0);
+      const subtotal = cart.reduce((acc, it) => acc + (it.price * it.qty), 0);
+
+      badgeCount.innerText = totalItems;
+      mobileCount.innerText = totalItems;
+      const formatted = `S/ ${subtotal.toFixed(2)}`;
+      totalVal.innerText = formatted;
+      navCartTotal.innerText = formatted;
+      mobileTotalVal.innerText = formatted;
+
+      if (cart.length === 0) {
+        listEl.innerHTML = `
+          <div class="cart-empty-text">
+            Tu bandeja está vacía.<br>
+            <small>Elige tus platos favoritos para armar tu pedido.</small>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = cart.map((item, idx) => `
+        <div class="cart-item">
+          <div>
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-opt">${item.option}</div>
+          </div>
+          <div class="cart-item-actions">
+            <button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button>
+            <span style="font-weight:700; font-size:0.85rem;">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
+            <div class="cart-item-price">S/ ${(item.price * item.qty).toFixed(2)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function scrollTabs(amount) {
+      const scrollEl = document.getElementById('categoriesScroll');
+      scrollEl.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+
+    function filterCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      document.getElementById('searchInput').value = '';
+      applyFilters();
+    }
+
+    // Scroll horizontal con rueda del ratón y Arrastrar con mouse (Drag-to-scroll)
+    (function initTabsDragAndWheel() {
+      const slider = document.getElementById('categoriesScroll');
+      if (!slider) return;
+
+      // 1. Rueda del ratón desliza horizontalmente
+      slider.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          slider.scrollLeft += e.deltaY;
+        }
+      }, { passive: false });
+
+      // 2. Click y arrastrar con mouse
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+
+      slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.style.cursor = 'grabbing';
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+      });
+      slider.addEventListener('mouseleave', () => {
+        isDown = false;
+        slider.style.cursor = 'grab';
+      });
+      slider.addEventListener('mouseup', () => {
+        isDown = false;
+        slider.style.cursor = 'grab';
+      });
+      slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        slider.scrollLeft = scrollLeft - walk;
+      });
+    })();
+
+    function handleSearch() {
+      applyFilters();
+    }
+
+    function addDishById(dishId, ev) {
+      if (ev) ev.stopPropagation();
+      const d = dishes.find(x => x.id === dishId);
+      if (!d) return;
+      const defaultOpt = (Array.isArray(d.options) && d.options.length > 0) ? d.options[0] : 'Estándar';
+      addItemToCart(d.name, Number(d.price || 0), defaultOpt);
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      let list = dishes;
+      if (currentCategory !== 'todos') {
+        const cat = currentCategory.toLowerCase();
+        list = list.filter(d => {
+          const dc = (d.category || '').toLowerCase();
+          if (cat === 'duos' || cat === 'combos') return dc === 'duos' || dc === 'combos';
+          return dc === cat;
+        });
+      }
+      if (q) {
+        list = list.filter(d =>
+          (d.name || '').toLowerCase().includes(q) ||
+          (d.desc || '').toLowerCase().includes(q)
+        );
+      }
+      renderDishes(list);
+    }
+
+    function renderDishes(dishArray) {
+      const grid = document.getElementById('dishesGrid');
+      const isList = (viewMode === 'list');
+      grid.classList.toggle('list-view', isList);
+
+      if (dishArray.length === 0) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No se encontraron platillos con esa búsqueda.</div>`;
+        return;
+      }
+
+      grid.innerHTML = dishArray.map(d => {
+        const imgs = (Array.isArray(d.images) && d.images.length > 0) ? d.images.slice(0, 5) : [d.img || 'assets/duo_espadazo.webp'];
+        const photoCount = imgs.length;
+        const badgeCls = d.badgeType || 'chef';
+        const badgeTxt = d.badge || 'RECOMENDADO';
+        const defaultOpt = (Array.isArray(d.options) && d.options.length > 0) ? d.options[0] : 'Clásico';
+        const priceVal = Number(d.price || 0).toFixed(2);
+        const photoBadgeHtml = photoCount > 1
+          ? `<span class="dish-photo-count-badge" title="Haz clic para ver las ${photoCount} fotos">${isList ? photoCount + 'f' : photoCount + ' fotos'}</span>`
+          : '';
+
+        if (isList) {
+          return `
+            <article class="dish-card is-list" onclick="openDishModal('${d.id}')">
+              <div class="dish-thumb-wrap">
+                <img src="${imgs[0]}" alt="${d.name}" class="dish-thumb" onerror="this.src='assets/duo_espadazo.jpg'">
+                ${photoBadgeHtml}
+              </div>
+              <div class="dish-body">
+                <div class="dish-list-info">
+                  <div class="dish-header">
+                    <h3 class="dish-title">${d.name}</h3>
+                    <span class="dish-opt-summary">${defaultOpt}</span>
+                  </div>
+                  <p class="dish-desc">${d.desc || ''}</p>
+                </div>
+                <div class="dish-controls" onclick="event.stopPropagation()">
+                  <div class="dish-price">S/ ${priceVal}</div>
+                  <button class="btn-add-cart" onclick="addDishById('${d.id}', event)">
+                    <span class="icon">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    </span>
+                    <span>Agregar</span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        }
+
+        return `
+          <article class="dish-card" onclick="openDishModal('${d.id}')">
+            <div class="dish-thumb-wrap">
+              <img src="${imgs[0]}" alt="${d.name}" class="dish-thumb" onerror="this.src='assets/duo_espadazo.jpg'">
+              <div class="dish-badge-top ${badgeCls}">${badgeTxt}</div>
+              ${photoBadgeHtml}
+            </div>
+            <div class="dish-body">
+              <div>
+                <div class="dish-header">
+                  <h3 class="dish-title">${d.name}</h3>
+                  <div class="dish-price">S/ ${priceVal}</div>
+                </div>
+                <p class="dish-desc">${d.desc || ''}</p>
+              </div>
+              <div class="dish-controls" onclick="event.stopPropagation()">
+                <span class="dish-opt-summary">${defaultOpt}</span>
+                <button class="btn-add-cart" onclick="addDishById('${d.id}', event)">
+                  <span class="icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                  </span>
+                  <span>Agregar</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function setModalGalleryIndex(idx) {
+      if (!modalGalleryImages.length) return;
+      modalGalleryIdx = (idx + modalGalleryImages.length) % modalGalleryImages.length;
+      document.getElementById('modalImg').src = modalGalleryImages[modalGalleryIdx];
+      const counter = document.getElementById('modalPhotoCounter');
+      if (counter && modalGalleryImages.length > 1) {
+        counter.innerText = `${modalGalleryIdx + 1} / ${modalGalleryImages.length} fotos`;
+      }
+      document.querySelectorAll('#modalGalleryThumbs .modal-gallery-thumb').forEach((el, i) => {
+        el.classList.toggle('active', i === modalGalleryIdx);
+      });
+    }
+
+    function stepModalGallery(delta) {
+      setModalGalleryIndex(modalGalleryIdx + delta);
+    }
+
+    // MODAL
+    function openDishModal(dishId) {
+      const d = dishes.find(x => x.id === dishId);
+      if (!d) return;
+      modalSelectedDish = d;
+      const opts = (Array.isArray(d.options) && d.options.length > 0) ? d.options : ['Ají Suave', 'Ají Medio'];
+      modalSelectedOption = opts[0];
+
+      modalGalleryImages = (Array.isArray(d.images) && d.images.length > 0) ? d.images.slice(0, 5) : [d.img || 'assets/duo_espadazo.webp'];
+      modalGalleryIdx = 0;
+
+      const stripEl = document.getElementById('modalThumbsStrip');
+      const thumbsEl = document.getElementById('modalGalleryThumbs');
+      const counterEl = document.getElementById('modalPhotoCounter');
+      const prevBtn = document.getElementById('modalPrevBtn');
+      const nextBtn = document.getElementById('modalNextBtn');
+
+      if (modalGalleryImages.length > 1) {
+        if (stripEl) stripEl.style.display = 'block';
+        if (counterEl) counterEl.style.display = 'inline-block';
+        if (prevBtn) prevBtn.style.display = 'flex';
+        if (nextBtn) nextBtn.style.display = 'flex';
+        if (thumbsEl) {
+          thumbsEl.innerHTML = modalGalleryImages.map((src, i) => `
+            <img src="${src}" alt="Foto ${i + 1}" class="modal-gallery-thumb ${i === 0 ? 'active' : ''}" onclick="setModalGalleryIndex(${i})">
+          `).join('');
+        }
+      } else {
+        if (stripEl) stripEl.style.display = 'none';
+        if (counterEl) counterEl.style.display = 'none';
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        if (thumbsEl) thumbsEl.innerHTML = '';
+      }
+      setModalGalleryIndex(0);
+
+      document.getElementById('modalTitle').innerText = d.name;
+      document.getElementById('modalPrice').innerText = `S/ ${Number(d.price || 0).toFixed(2)}`;
+      document.getElementById('modalDesc').innerText = d.desc || '';
+      document.getElementById('modalNotes').value = '';
+
+      const pills = document.getElementById('modalOptionsPills');
+      pills.innerHTML = opts.map((opt, i) => `
+        <button class="pill-btn ${i===0?'active':''}" onclick="selectModalOption(this.dataset.opt, this)" data-opt="${String(opt).replace(/"/g, '&quot;')}">${opt}</button>
+      `).join('');
+
+      document.getElementById('dishModal').classList.add('open');
+    }
+
+    function selectModalOption(opt, btn) {
+      modalSelectedOption = opt;
+      document.querySelectorAll('#modalOptionsPills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function confirmModalAdd() {
+      if (!modalSelectedDish) return;
+      const notes = document.getElementById('modalNotes').value.trim();
+      let optText = modalSelectedOption;
+      if (notes) {
+        optText += ` (Nota: ${notes})`;
+      }
+      addItemToCart(modalSelectedDish.name, modalSelectedDish.price, optText);
+      closeDishModal();
+    }
+
+    function closeDishModal() {
+      document.getElementById('dishModal').classList.remove('open');
+    }
+
+    async function openQrModal() {
+      const titleEl = document.getElementById('qrModalTitleCarta');
+      const subEl = document.getElementById('qrModalSubtitleCarta');
+      const imgEl = document.getElementById('qrModalImgCarta');
+      const dlEl = document.getElementById('qrModalDownloadCarta');
+      const switchWrap = document.getElementById('qrTablesSwitchWrap');
+      const switchGrid = document.getElementById('qrTablesSwitchGrid');
+
+      if (urlTableId) {
+        if (titleEl) titleEl.innerText = `QR y Carta Vinculada — ${qrLockedTableName}`;
+        if (subEl) subEl.innerText = `Este código QR está vinculado de forma fija a ${qrLockedTableName}. Los pedidos llegan directo a esta mesa.`;
+        const qrSrc = `/qr_table/${encodeURIComponent(urlTableId)}?t=${Date.now()}`;
+        if (imgEl) imgEl.src = qrSrc;
+        if (dlEl) {
+          dlEl.href = qrSrc;
+          dlEl.download = `QR_${qrLockedTableName.replace(/\s+/g, '_')}.png`;
+        }
+      } else {
+        if (titleEl) titleEl.innerText = 'Carta Pública (Delivery) y Mesas QR';
+        if (subEl) subEl.innerText = 'Enlace actual: Carta Pública para Delivery / Para Llevar. Selecciona una mesa abajo para ver su carta vinculada por QR.';
+        if (imgEl) imgEl.src = 'QR_MESA_ESPADAZO_MARINO.png?v=4';
+        if (dlEl) {
+          dlEl.href = 'QR_MESA_ESPADAZO_MARINO.png';
+          dlEl.download = 'QR_MESA_ESPADAZO_MARINO.png';
+        }
+      }
+
+      if (switchWrap && switchGrid) {
+        try {
+          const res = await fetch('/api/tables?_=' + Date.now(), { cache: 'no-store' });
+          if (res.ok) {
+            const tbls = await res.json();
+            if (Array.isArray(tbls) && tbls.length > 0) {
+              switchWrap.style.display = 'block';
+              const publicChip = `<a href="/" class="qr-table-chip-link ${!urlTableId ? 'active' : ''}">Delivery Público</a>`;
+              switchGrid.innerHTML = publicChip + tbls.map(t => {
+                const isAct = urlTableId && String(urlTableId).toLowerCase() === String(t.id).toLowerCase();
+                return `<a href="/?mesa=${encodeURIComponent(t.id)}" class="qr-table-chip-link ${isAct ? 'active' : ''}">${t.name}</a>`;
+              }).join('');
+            }
+          }
+        } catch (e) {}
+      }
+
+      document.getElementById('qrModal').classList.add('open');
+    }
+    function closeQrModal() {
+      document.getElementById('qrModal').classList.remove('open');
+    }
+
+    function toggleCartMobile() {
+      document.getElementById('cartSidebar').classList.toggle('mobile-open');
+    }
+
+    async function sendOrderWhatsApp() {
+      if (cart.length === 0) {
+        alert('Por favor selecciona al menos un platillo en tu bandeja.');
+        return;
+      }
+
+      const inpEl = document.getElementById('customerContextInput');
+      const publicDetail = inpEl ? inpEl.value.trim() : '';
+      if (!urlTableId && !publicDetail) {
+        alert(currentService === 'Delivery'
+          ? 'Por favor ingresa tu nombre, teléfono y dirección de delivery.'
+          : 'Por favor ingresa tu nombre y teléfono para recoger tu pedido.');
+        if (inpEl) inpEl.focus();
+        return;
+      }
+
+      const contextDetail = urlTableId ? qrLockedTableName : publicDetail;
+      const targetTableId = urlTableId || (currentService === 'Delivery' ? 'delivery' : 'llevar');
+      const targetTableName = urlTableId
+        ? qrLockedTableName
+        : `${currentService}: ${publicDetail}`;
+      const total = cart.reduce((acc, it) => acc + (it.price * it.qty), 0);
+
+      // Enviar comanda en vivo a la cocina
+      try {
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            table_id: targetTableId,
+            table_name: targetTableName,
+            service_mode: urlTableId ? 'En Mesa (QR)' : currentService,
+            items: cart.map(it => ({
+              id: it.id,
+              name: it.name,
+              price: it.price,
+              qty: it.qty,
+              option: it.option || ''
+            })),
+            total: total,
+            notes: ''
+          })
+        });
+      } catch (err) {
+        console.warn("No se pudo enviar comanda al servidor:", err);
+      }
+
+      let text = `🌊 *PEDIDO — ESPADAZO MARINO*\n`;
+      text += `📍 *Modalidad:* ${urlTableId ? 'Consumo en Local (QR)' : currentService}\n`;
+      if (contextDetail) {
+        text += `🏷️ *${urlTableId ? 'Mesa' : 'Detalle'}:* ${contextDetail}\n`;
+      }
+      text += `⏱️ *Hora:* ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}\n`;
+      text += `---------------------------------------\n`;
+      
+      cart.forEach(it => {
+        text += `▪️ *${it.qty}x* ${it.name}\n   ↳ _${it.option}_ -> *S/ ${(it.price * it.qty).toFixed(2)}*\n`;
+      });
+
+      text += `---------------------------------------\n`;
+      text += `💰 *TOTAL A PAGAR:* S/ ${total.toFixed(2)}\n\n`;
+      text += `👋 ¡Hola! Envío mi pedido desde la Carta Virtual. ¡Muchas gracias!`;
+
+      const encoded = encodeURIComponent(text);
+      window.open(`https://wa.me/${waPhone}?text=${encoded}`, '_blank');
+    }
+
+    // Detección de parámetro ?mesa= en URL (QR de mesa = solo lectura; sin ?mesa= = Carta Pública Delivery)
+    let urlTableId = null;
+    async function initAccessContext() {
+      const params = new URLSearchParams(window.location.search);
+      const m = params.get('mesa') || params.get('table');
+      const publicSwitch = document.getElementById('publicServiceSwitch');
+      const qrHeaderBadge = document.getElementById('qrHeaderBadge');
+      const qrHeaderTableLabel = document.getElementById('qrHeaderTableLabel');
+      const qrBox = document.getElementById('qrTableLockedBox');
+      const qrNameEl = document.getElementById('qrLockedTableName');
+      const publicBox = document.getElementById('publicContextBox');
+      const serviceLbl = document.getElementById('cartServiceLabel');
+
+      if (m && m.trim()) {
+        urlTableId = m.trim();
+        currentService = 'En Mesa (QR)';
+        qrLockedTableName = /^\d+$/.test(urlTableId) ? `Mesa ${urlTableId}` : urlTableId;
+
+        if (publicSwitch) publicSwitch.style.display = 'none';
+        if (qrHeaderBadge) qrHeaderBadge.style.display = 'inline-flex';
+        if (qrHeaderTableLabel) qrHeaderTableLabel.innerText = qrLockedTableName;
+        if (qrBox) qrBox.style.display = 'block';
+        if (qrNameEl) qrNameEl.innerText = qrLockedTableName;
+        if (publicBox) publicBox.style.display = 'none';
+        if (serviceLbl) serviceLbl.innerText = 'En Local • QR';
+
+        // Resolver nombre oficial de la mesa desde /api/tables
+        try {
+          const res = await fetch('/api/tables?_=' + Date.now(), { cache: 'no-store' });
+          if (res.ok) {
+            const tbls = await res.json();
+            const found = tbls.find(t => String(t.id).toLowerCase() === urlTableId.toLowerCase() || (t.name || '').toLowerCase() === urlTableId.toLowerCase());
+            if (found && found.name) {
+              qrLockedTableName = found.name;
+              if (qrHeaderTableLabel) qrHeaderTableLabel.innerText = qrLockedTableName;
+              if (qrNameEl) qrNameEl.innerText = qrLockedTableName;
+            }
+          }
+        } catch (e) {}
+      } else {
+        // Enlace público: inicia en Delivery sin permitir editar mesas del local
+        if (publicSwitch) publicSwitch.style.display = 'flex';
+        if (qrHeaderBadge) qrHeaderBadge.style.display = 'none';
+        if (qrBox) qrBox.style.display = 'none';
+        if (publicBox) publicBox.style.display = 'block';
+        setServiceMode('Delivery');
+      }
+    }
+
+    // Cargar platillos dinámicos desde la API si está disponible
+    async function syncDishesFromApi() {
+      try {
+        const res = await fetch('/api/dishes?client=1&_=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const apiDishes = await res.json();
+          if (apiDishes && apiDishes.length > 0) {
+            dishes = apiDishes;
+            applyFilters();
+          }
+        }
+      } catch (e) {
+        // Fallback a platillos locales
+      }
+    }
+
+    // TEMA NOCHE / DIA
+    function initTheme() {
+      try {
+        const saved = localStorage.getItem('espadazo_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(saved);
+      } catch (e) {
+        applyTheme('light');
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try { localStorage.setItem('espadazo_theme', theme); } catch (e) {}
+      const isDark = theme === 'dark';
+
+      const moonIcons = document.querySelectorAll('.theme-icon-moon');
+      const sunIcons = document.querySelectorAll('.theme-icon-sun');
+      const textLabels = document.querySelectorAll('.theme-text');
+
+      moonIcons.forEach(el => el.style.display = isDark ? 'none' : 'inline-flex');
+      sunIcons.forEach(el => el.style.display = isDark ? 'inline-flex' : 'none');
+      textLabels.forEach(el => el.textContent = isDark ? 'Modo Día' : 'Modo Noche');
+
+      const brandLogo = document.getElementById('mainBrandLogo');
+      if (brandLogo) {
+        brandLogo.src = isDark ? 'assets/logo_dark.svg' : 'assets/logo.svg';
+      }
+    }
+
+    // Iniciar
+    initTheme();
+    const _initParams = new URLSearchParams(window.location.search);
+    if (_initParams.get('view') === 'list' || _initParams.get('view') === 'cards') {
+      viewMode = _initParams.get('view');
+    }
+    initAccessContext();
+    setViewMode(viewMode);
+    renderCart();
+    syncDishesFromApi().then(() => {
+      const pd = _initParams.get('dish');
+      if (pd) openDishModal(pd);
+    });
+  </script>
+</body>
+</html>

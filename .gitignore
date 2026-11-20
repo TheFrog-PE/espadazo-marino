@@ -1,0 +1,32 @@
+# Binarios y empaquetado local pesados
+cloudflared.exe
+dist/
+build/
+*.spec
+*.exe
+*.bat
+*.caja
+
+# Python cache y entornos
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Estado local transitorio y backups
+data/database.db
+data/database.db-wal
+data/database.db-shm
+data/db.json.pre_sqlite_bak
+data/backups/
+data/receipts_cache/
+
+# Capturas y artefactos de prueba
+screenshot*.png
+
+# Secretos y configuracion de plataforma
+.env
+.env.local
+.env.*.local
+.vercel/

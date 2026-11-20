@@ -1,0 +1,4731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Espadazo Marino — Centro de Mando & Control [Admin]</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('espadazo_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    @media print {
+      body.printing-receipt > *:not(#receiptModal) { display: none !important; }
+      body.printing-receipt #receiptModal {
+        position: static !important;
+        background: transparent !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+      body.printing-receipt .receipt-modal-card {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 80mm !important;
+        width: 80mm !important;
+      }
+      body.printing-receipt .order-detail-header,
+      body.printing-receipt .receipt-actions-pane { display: none !important; }
+      body.printing-receipt .receipt-layout-grid { display: block !important; padding: 0 !important; }
+      body.printing-receipt #receiptThermalSlip { border: none !important; padding: 4mm !important; }
+    }
+    :root {
+      --bg: #F8F6F2;
+      --surface: #FFFFFF;
+      --surface-subtle: #F4F1EB;
+      --surface-card: #FFFFFF;
+      --border: #E8E3DA;
+      --border-focus: #D0C8BC;
+      --text-main: #1A1F26;
+      --text-muted: #64707D;
+      --primary: #C95332;
+      --primary-hover: #B04223;
+      --primary-light: #FBEFEA;
+      --accent-blue: #2B7A9E;
+      --accent-blue-light: #EBF3F7;
+      --green-status: #10B981;
+      --green-light: #E6F8F0;
+      --red-order: #E11D48;
+      --red-light: #FEF2F2;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 999px;
+      --shadow-sm: 0 2px 6px rgba(26,31,38, 0.04);
+      --shadow-md: 0 6px 18px rgba(26,31,38, 0.07);
+      --shadow-lg: 0 16px 40px rgba(26,31,38, 0.14);
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0B111A;
+      --surface: #151D2A;
+      --surface-subtle: #1C2638;
+      --surface-card: #151D2A;
+      --border: #29384D;
+      --border-focus: #3B4E68;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --primary: #E05D38;
+      --primary-hover: #F06A45;
+      --primary-light: rgba(224, 93, 56, 0.18);
+      --accent-blue: #38BDF8;
+      --accent-blue-light: rgba(56, 189, 248, 0.15);
+      --green-status: #34D399;
+      --green-light: rgba(52, 211, 153, 0.15);
+      --red-order: #FB7185;
+      --red-light: rgba(251, 113, 133, 0.15);
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.55);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    [data-theme="dark"] .admin-navbar,
+    [data-theme="dark"] .metrics-bar,
+    [data-theme="dark"] .admin-footer,
+    [data-theme="dark"] .bento-box-header {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .metrics-bar {
+      background: var(--surface-subtle);
+    }
+    [data-theme="dark"] .order-card,
+    [data-theme="dark"] .table-card,
+    [data-theme="dark"] .dish-card-compact,
+    [data-theme="dark"] .modal-card,
+    [data-theme="dark"] .order-detail-card,
+    [data-theme="dark"] .receipt-actions-pane {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .order-card.status-entregado {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    [data-theme="dark"] .order-head,
+    [data-theme="dark"] .table-row-top,
+    [data-theme="dark"] .dish-card-bottom {
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .order-id-label {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+    }
+    [data-theme="dark"] .order-note-alert {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: #FCD34D;
+    }
+    [data-theme="dark"] .finalized-mini-card {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    [data-theme="dark"] .finalized-mini-card:hover {
+      background: var(--surface);
+      border-color: var(--accent-blue);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .btn-table-qr,
+    [data-theme="dark"] .btn-table-del,
+    [data-theme="dark"] .btn-edit-pencil {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .btn-table-del {
+      color: var(--text-muted);
+    }
+    [data-theme="dark"] .time-filter-segmented {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .btn-time-seg.active {
+      background: var(--surface);
+      color: var(--primary);
+    }
+    [data-theme="dark"] .form-group input,
+    [data-theme="dark"] .form-group select,
+    [data-theme="dark"] .form-group textarea {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .table-expanded-order-details {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .order-detail-table th {
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      border-bottom-color: var(--border);
+    }
+    [data-theme="dark"] .order-detail-table td {
+      border-bottom-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .sparkline-box {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .dish-photo-slot {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .dish-photo-slot.empty:hover {
+      background: rgba(224, 93, 56, 0.15);
+    }
+    [data-theme="dark"] #boxModal .modal-card > .modal-body > div {
+      background: var(--surface-subtle) !important;
+      border-color: var(--border) !important;
+    }
+    [data-theme="dark"] #boxModal strong {
+      color: var(--text-main) !important;
+    }
+    [data-theme="dark"] #boxModal input[type="file"] {
+      background: var(--surface) !important;
+      border-color: var(--border) !important;
+      color: var(--text-main) !important;
+    }
+    [data-theme="dark"] .btn-action {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .btn-action:hover {
+      background: var(--border);
+    }
+    [data-theme="dark"] .pill-metric {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .btn-filter-pill {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    [data-theme="dark"] .btn-filter-pill.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFFFFF;
+    }
+    [data-theme="dark"] .btn-cat-pill {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    [data-theme="dark"] .btn-cat-pill.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFFFFF;
+    }
+    [data-theme="dark"] .btn-cat-pill:hover {
+      background: var(--surface-subtle);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .receipt-modal-card {
+      background: var(--surface-subtle);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.4;
+      overflow: hidden; /* Todo se visualiza en una sola pantalla */
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* SOLID SVG ICONS */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    /* TOP NAVBAR */
+    .admin-navbar {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 100;
+    }
+    .nav-inner {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-logo {
+      height: 38px;
+      width: auto;
+      display: block;
+    }
+    .badge-status {
+      background: var(--green-light);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--green-status);
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green-status);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.95; }
+      50% { opacity: 0.7; }
+    }
+    @keyframes liveGlow {
+      0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 1px rgba(225, 29, 72, 0.28), 0 0 8px rgba(225, 29, 72, 0.45);
+      }
+      50% {
+        opacity: 0.68;
+        box-shadow: 0 0 0 1px rgba(225, 29, 72, 0.14), 0 0 3px rgba(225, 29, 72, 0.2);
+      }
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-action {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-action:hover {
+      background: #EAE6DF;
+      border-color: var(--border-focus);
+    }
+    .btn-action.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #FFF;
+    }
+    .btn-action.primary:hover { background: var(--primary-hover); }
+
+    /* METRICS SUB-BAR */
+    .metrics-bar {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      height: 36px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 0.72rem;
+    }
+    .metrics-inner {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .metrics-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pill-metric {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pill-metric strong {
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      color: var(--accent-blue);
+      font-weight: 800;
+    }
+    .pill-metric.active-orders strong { color: var(--red-order); }
+    .pill-metric.sales strong { color: var(--green-status); }
+
+    /* BENTO VIEWPORT: TODO VISIBLE EN UNA SOLA PANTALLA */
+    .bento-viewport {
+      height: calc(100vh - 134px); /* Espacio para el footer con mas aire */
+      padding: 8px 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* Mitad izquierda: Mod 01 + Mod 02 | Mitad derecha: Mod 03 */
+      grid-template-rows: 1fr 1fr;    /* Altura balanceada para Comandas arriba y Mesas abajo */
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    /* BENTO BOX */
+    .bento-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .bento-box:hover {
+      border-color: #D4CDC3;
+    }
+
+    .bento-box-header {
+      padding: 7px 12px;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .bento-tag {
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .bento-title {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* BOTON DE ACCION INTERNO DE MODULO (NUEVO PLATILLO, CREAR MESA) */
+    .btn-module-cta {
+      background: var(--primary);
+      color: #FFFFFF;
+      border: none;
+      height: 26px;
+      box-sizing: border-box;
+      padding: 0 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-module-cta:hover {
+      background: var(--primary-hover);
+    }
+    .btn-module-cta.blue {
+      background: var(--accent-blue);
+    }
+    .btn-module-cta.blue:hover {
+      background: #1F5F7D;
+    }
+
+    /* BOTON EXPANDIR MODULO */
+    .btn-expand {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      height: 26px;
+      box-sizing: border-box;
+      padding: 0 9px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-expand:hover {
+      background: var(--text-main);
+      color: #FFF;
+      border-color: var(--text-main);
+    }
+    .btn-expand svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* ESTADO EXPANDIDO / MAXIMIZADO */
+    .expanded-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 31, 38, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+    }
+    .expanded-backdrop.active {
+      display: block;
+    }
+    .bento-box.expanded-module {
+      position: fixed !important;
+      top: 16px !important;
+      left: 16px !important;
+      right: 16px !important;
+      bottom: 16px !important;
+      z-index: 9999 !important;
+      height: auto !important;
+      max-height: calc(100vh - 32px) !important;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4) !important;
+      border-radius: var(--radius-lg) !important;
+      animation: zoomIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ========================================================
+       MODULO 1: COMANDAS EN VIVO (2 COLUMNAS)
+       ======================================================== */
+    .mod-1 {
+      grid-column: 1 / 2;
+      grid-row: 1 / 2;
+      height: 100%;
+      min-height: 0;
+    }
+    .mod-1-body {
+      overflow-x: hidden;
+      padding: 8px 12px;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .orders-filter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 6px;
+    }
+    .filter-pills {
+      display: flex;
+      gap: 4px;
+    }
+    .btn-filter-pill {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 2px 9px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-filter-pill.active {
+      background: var(--text-main);
+      color: #FFF;
+      border-color: var(--text-main);
+    }
+
+    /* 2 COLUMNAS PARA COMANDAS */
+    .orders-grid-3col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    
+    /* TARJETAS DE PEDIDO: SIN FRANJA LATERAL, BORDE PINTADO AL HOVER */
+    .order-card {
+      min-width: 0;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      cursor: default;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .order-card:hover {
+      border-color: var(--primary) !important;
+      box-shadow: 0 4px 14px rgba(201, 83, 50, 0.15) !important;
+      transform: translateY(-1px);
+    }
+    .order-card.status-entregado {
+      background: #FAFAFA;
+      opacity: 0.88;
+    }
+    .order-card.status-entregado:hover {
+      border-color: var(--green-status) !important;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15) !important;
+    }
+
+    .order-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #F2EFE9;
+      padding: 0 6px 4px 0; white-space: nowrap;
+    }
+    .order-table-title {
+      font-size: 0.8rem;
+      font-family: var(--font-heading);
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .order-id-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.05);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    .order-time-text {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .order-items-box {
+      list-style: none;
+      margin: 4px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      max-height: 125px; /* Mas espacio vertical para los items */
+      overflow-y: auto;
+    }
+    .order-item-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      line-height: 1.25;
+    }
+    .order-item-name {
+      font-weight: 700;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 70%;
+    }
+    .order-item-opt { font-size: 0.65rem; color: var(--text-muted); font-weight: normal; }
+    .order-item-subtotal {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      color: var(--text-main);
+      flex-shrink: 0;
+    }
+    .order-note-alert {
+      background: #FFFBEB;
+      border: 1px dashed #FDE68A;
+      color: #B45309;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      margin: 3px 0;
+    }
+    .order-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border);
+    }
+    .order-total-amount {
+      font-family: var(--font-heading);
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .btn-status-toggle {
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 3px 9px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-status-toggle.is-pedido {
+      background: var(--red-light);
+      color: var(--red-order);
+      border: 1px solid rgba(225, 29, 72, 0.3);
+    }
+    .btn-status-toggle.is-pedido:hover {
+      background: var(--red-order);
+      color: #FFF;
+    }
+    .btn-status-toggle.is-entregado {
+      background: var(--green-light);
+      color: var(--green-status);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .order-card.status-finalizada {
+      background: #F8FAFC;
+      border-color: #CBD5E1;
+      opacity: 0.92;
+    }
+    .order-card.status-finalizada:hover {
+      border-color: #64748B;
+      opacity: 1;
+    }
+    .btn-status-toggle.is-finalizada {
+      background: #E2E8F0;
+      color: #475569;
+      border: 1px solid #CBD5E1;
+      cursor: default;
+    }
+    /* BOTON MANTENER PRESIONADO 3s CON BARRA DE PROGRESO */
+    .btn-hold-3s {
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    .btn-hold-3s .hold-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: rgba(225, 29, 72, 0.22);
+      pointer-events: none;
+      transition: none;
+    }
+    .btn-hold-3s.settle-hold-btn .hold-fill {
+      background: rgba(6, 78, 59, 0.52);
+    }
+    .btn-hold-3s .hold-label,
+    .btn-hold-3s .hold-label * {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      pointer-events: none;
+    }
+    /* SECCION FINALIZADOS COMPACTA AL FINAL DEL MODULO 01 */
+    .finalized-section-wrap {
+      grid-column: 1 / -1;
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .finalized-section-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .finalized-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+      gap: 5px;
+    }
+    .finalized-mini-card {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .finalized-mini-card:hover {
+      border-color: #94A3B8;
+      background: #F1F5F9;
+      color: var(--text-main);
+    }
+    .finalized-mini-mesa {
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .finalized-mini-meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .finalized-mini-monto {
+      font-weight: 800;
+      color: #047857;
+    }
+    .finalized-mini-hora {
+      font-size: 0.6rem;
+      color: #64748B;
+    }
+    .order-detail-badge.finalizado {
+      background: #F1F5F9;
+      color: #334155;
+      border: 1px solid #CBD5E1;
+    }
+
+    /* ========================================================
+       MODULO 2: MESAS & QR (4 COLUMNAS)
+       ======================================================== */
+    .mod-2 {
+      grid-column: 1 / 2;
+      grid-row: 2 / 3;
+      height: 100%;
+      min-height: 0;
+    }
+    .mod-2-body {
+      overflow-x: hidden;
+      padding: 8px 10px;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+    /* 4 COLUMNAS PARA MESAS */
+    .tables-grid-4col {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+        /* TARJETA DE MESA: DISTRIBUCION SOLICITADA */
+        /* TARJETA DE MESA: DISTRIBUCION SOLICITADA */
+        .table-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 10px; /* Mas aire interno */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      min-width: 0;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .table-card:hover {
+      border-color: var(--accent-blue) !important;
+      box-shadow: 0 4px 12px rgba(43, 122, 158, 0.15) !important;
+      transform: translateY(-1px);
+    }
+    .table-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      border-bottom: 1px solid #F6F4F0;
+      padding: 0 6px 4px 0; white-space: nowrap;
+    }
+    .table-name-txt {
+      font-family: var(--font-heading);
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .table-cap-txt {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .table-row-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin: 2px 0;
+    }
+    .table-orders-count {
+      font-size: 0.61rem;
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+    .table-orders-count.has-orders {
+      color: var(--red-order);
+    }
+    .table-state-badge {
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+    }
+    .table-state-badge.state-ocupada {
+      background: var(--red-light);
+      color: var(--red-order);
+      border: 1px solid rgba(225, 29, 72, 0.25);
+    }
+    .table-state-badge.state-libre {
+      background: var(--green-light);
+      color: var(--green-status);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .table-actions {
+      display: flex;
+      gap: 3px;
+      width: 100%;
+      margin-top: 1px;
+    }
+    .btn-table-qr {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: all 0.2s;
+    }
+    .btn-table-qr:hover {
+      background: var(--accent-blue);
+      color: #FFF;
+      border-color: var(--accent-blue);
+    }
+    .btn-table-del {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 4px;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-table-del:hover {
+      background: var(--red-light);
+      color: var(--red-order);
+      border-color: var(--red-order);
+    }
+
+    /* ========================================================
+       MODULO 3: CATALOGO DE PLATILLOS (4 COLUMNAS)
+       ======================================================== */
+    .mod-3 {
+      grid-column: 2 / 3;
+      grid-row: 1 / 3;
+      height: 100%;
+      min-height: 0;
+    }
+    .mod-3-body {
+      overflow-x: hidden;
+      padding: 8px 12px;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    /* BARRA DE FILTROS POR CATEGORIA EN MOD-3 */
+    .category-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-cat-pill {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 2px 8px;
+      font-size: 0.64rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-cat-pill:hover {
+      background: #EAE6DF;
+      color: var(--text-main);
+    }
+    .btn-cat-pill.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+
+    /* 4 COLUMNAS DE PLATILLOS */
+    .dishes-grid-4col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    /* TARJETA DE PLATILLO OPTIMIZADA: DISTRIBUCION ELEGANTE Y COMPACTA */
+    .dish-card-compact {
+      min-width: 0;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .dish-card-compact:hover {
+      border-color: var(--primary) !important;
+      box-shadow: 0 4px 14px rgba(201, 83, 50, 0.15) !important;
+      transform: translateY(-1px);
+    }
+    
+    .dish-card-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dish-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .dish-main-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex: 1;
+      min-width: 0;
+    }
+    .dish-title {
+      font-weight: 700;
+      font-size: 0.77rem;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dish-desc-preview {
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+    .dish-category-label {
+      font-size: 0.58rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .dish-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 4px;
+      border-top: 1px solid #F4F1EB;
+    }
+    .dish-price-text {
+      font-family: var(--font-heading);
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .dish-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .dish-toggle-btn {
+      border-radius: var(--radius-full);
+      padding: 2px 7px;
+      font-size: 0.62rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: var(--green-light);
+      color: var(--green-status);
+      transition: all 0.2s;
+    }
+    .dish-toggle-btn.paused {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    .btn-edit-pencil {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .btn-edit-pencil:hover {
+      background: var(--surface-subtle);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* MODALES REDISEÑADOS CON ALTO CONTRASTE Y GLASSMORPHISM */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 17, 26, 0.72);
+      backdrop-filter: blur(8px);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.active { display: flex; }
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 540px;
+      overflow: hidden;
+      animation: modalSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlide {
+      from { transform: translateY(16px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .modal-head {
+      padding: 14px 20px;
+      background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-head h3 {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .modal-close {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      font-size: 1.25rem;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    [data-theme="dark"] .modal-close {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+    .modal-close:hover {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-hint {
+      font-size: 0.69rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-top: 1px;
+    }
+    [data-theme="dark"] .form-hint {
+      color: #94A3B8;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.84rem;
+      color: var(--text-main);
+      background: var(--surface);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    [data-theme="dark"] .form-group input,
+    [data-theme="dark"] .form-group select,
+    [data-theme="dark"] .form-group textarea {
+      background: var(--surface-subtle);
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(201, 83, 50, 0.2);
+    }
+    .form-group input[readonly] {
+      background: var(--surface-subtle) !important;
+      color: var(--text-muted) !important;
+      cursor: default;
+      border-style: dashed;
+    }
+    .modal-foot {
+      padding: 14px 20px;
+      background: var(--surface-subtle);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* MODAL INFO BANNER */
+    .modal-info-banner {
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(2, 132, 199, 0.22);
+      border-left: 4px solid #0284C7;
+      padding: 13px 16px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    [data-theme="dark"] .modal-info-banner {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.32);
+      border-left-color: #38BDF8;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .modal-info-banner .banner-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #0284C7;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      letter-spacing: -0.01em;
+    }
+    [data-theme="dark"] .modal-info-banner .banner-title {
+      color: #38BDF8;
+    }
+    .modal-info-banner .banner-desc {
+      font-size: 0.74rem;
+      color: #475569;
+      line-height: 1.5;
+    }
+    [data-theme="dark"] .modal-info-banner .banner-desc {
+      color: #E2E8F0;
+    }
+    .modal-info-banner .banner-desc strong {
+      color: #0F172A;
+      font-weight: 700;
+    }
+    [data-theme="dark"] .modal-info-banner .banner-desc strong {
+      color: #FFFFFF;
+    }
+
+    /* BOX ACTION CARDS (GESTION & MIGRACION DE CAJA) */
+    .box-action-card {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .box-action-card:hover {
+      border-color: var(--border-focus);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+    [data-theme="dark"] .box-action-card:hover {
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+    .box-action-card.export {
+      border-left: 4px solid #0284C7;
+    }
+    .box-action-card.import {
+      border-left: 4px solid #10B981;
+    }
+    .box-action-card.shift {
+      border-left: 4px solid #F59E0B;
+    }
+
+    .box-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .box-card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .box-icon-pill {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .box-icon-pill.blue {
+      background: rgba(2, 132, 199, 0.12);
+      color: #0284C7;
+    }
+    [data-theme="dark"] .box-icon-pill.blue {
+      background: rgba(56, 189, 248, 0.18);
+      color: #38BDF8;
+    }
+    .box-icon-pill.green {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10B981;
+    }
+    [data-theme="dark"] .box-icon-pill.green {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+    }
+    .box-icon-pill.amber {
+      background: rgba(245, 158, 11, 0.12);
+      color: #D97706;
+    }
+    [data-theme="dark"] .box-icon-pill.amber {
+      background: rgba(245, 158, 11, 0.2);
+      color: #FBBF24;
+    }
+
+    .box-card-title {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 3px;
+    }
+    .box-card-badge {
+      display: inline-block;
+      font-size: 0.64rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      background: rgba(2, 132, 199, 0.1);
+      color: #0284C7;
+    }
+    [data-theme="dark"] .box-card-badge {
+      background: rgba(56, 189, 248, 0.16);
+      color: #38BDF8;
+    }
+    .box-card-badge.green {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+    }
+    [data-theme="dark"] .box-card-badge.green {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+    }
+    .box-card-badge.amber {
+      background: rgba(245, 158, 11, 0.12);
+      color: #D97706;
+    }
+    [data-theme="dark"] .box-card-badge.amber {
+      background: rgba(245, 158, 11, 0.2);
+      color: #FBBF24;
+    }
+
+    .box-card-desc {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    [data-theme="dark"] .box-card-desc {
+      color: #94A3B8;
+    }
+    .box-card-desc code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.06);
+      color: var(--text-main);
+    }
+    [data-theme="dark"] .box-card-desc code {
+      background: rgba(255, 255, 255, 0.08);
+      color: #F1F5F9;
+    }
+
+    .btn-box-cta {
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 8px 18px;
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+    .btn-box-cta.blue {
+      background: #0284C7;
+      color: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.3);
+    }
+    .btn-box-cta.blue:hover {
+      background: #0369A1;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+    }
+    .btn-box-cta.green {
+      background: #10B981;
+      color: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+    .btn-box-cta.green:hover {
+      background: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+
+    .box-import-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .custom-file-button {
+      flex: 1;
+      min-width: 200px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .custom-file-button:hover {
+      border-color: #10B981;
+      color: #10B981;
+      background: rgba(16, 185, 129, 0.05);
+    }
+    .custom-file-button.has-file {
+      border-style: solid;
+      border-color: #10B981;
+      color: #10B981;
+      background: rgba(16, 185, 129, 0.08);
+    }
+    [data-theme="dark"] .custom-file-button {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: #334155;
+      color: #94A3B8;
+    }
+    [data-theme="dark"] .custom-file-button:hover {
+      border-color: #34D399;
+      color: #34D399;
+      background: rgba(52, 211, 153, 0.08);
+    }
+    [data-theme="dark"] .custom-file-button.has-file {
+      border-color: #34D399;
+      color: #34D399;
+      background: rgba(52, 211, 153, 0.12);
+    }
+
+    .box-shift-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .btn-box-shift-primary {
+      background: #F59E0B;
+      border: 1px solid #D97706;
+      color: #0F172A;
+      border-radius: var(--radius-sm);
+      padding: 9px 16px;
+      font-size: 0.77rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+    }
+    .btn-box-shift-primary:hover {
+      background: #D97706;
+      color: #FFFFFF;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+    [data-theme="dark"] .btn-box-shift-primary {
+      background: #F59E0B;
+      border-color: #F59E0B;
+      color: #0B111A;
+    }
+    [data-theme="dark"] .btn-box-shift-primary:hover {
+      background: #FBBF24;
+      color: #0B111A;
+    }
+
+    .btn-box-shift-danger {
+      background: transparent;
+      border: 1px dashed rgba(225, 29, 72, 0.4);
+      color: #E11D48;
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    [data-theme="dark"] .btn-box-shift-danger {
+      color: #FB7185;
+      border-color: rgba(251, 113, 133, 0.4);
+    }
+    .btn-box-shift-danger:hover {
+      background: rgba(225, 29, 72, 0.12);
+      border-style: solid;
+      border-color: #E11D48;
+      color: #E11D48;
+    }
+    [data-theme="dark"] .btn-box-shift-danger {
+      color: #FB7185;
+      border-color: rgba(251, 113, 133, 0.4);
+    }
+    .btn-box-shift-danger:hover {
+      background: rgba(225, 29, 72, 0.12);
+      border-style: solid;
+      border-color: #E11D48;
+    }
+  
+    /* FOOTER SISTEMA */
+    .admin-footer {
+      background: #FFFFFF;
+      border-top: 1px solid var(--border);
+      padding: 14px 24px; /* Mayor aire tanto arriba como abajo */
+      display: flex;
+      align-items: center;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      z-index: 10;
+    }
+    .admin-footer strong {
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.78rem;
+    }
+    .footer-inner {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .admin-footer strong {
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+  
+    /* ========================================================
+       MODO EXPANDIDO (5 COLUMNAS EN MODULOS 1, 2 Y 3)
+       ======================================================== */
+    /* Modulo 1 Expandido: 5 Columnas de Comandas */
+    .bento-box.mod-1.expanded-module .orders-grid-3col {
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+    .bento-box.mod-1.expanded-module .order-card {
+      cursor: pointer;
+    }
+
+    /* Modulo 2 Expandido: 5 Columnas de Mesas y Detalle de Pedidos */
+    .bento-box.mod-2.expanded-module .tables-grid-4col {
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+    .table-expanded-order-details {
+      display: none; /* Oculto en modo compacto */
+      background: #FDFCF9;
+      border: 1px dashed #E5E0D8;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-top: 4px;
+      font-size: 0.65rem;
+      text-align: left;
+    }
+    .bento-box.mod-2.expanded-module .table-expanded-order-details {
+      display: flex !important;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .exp-title {
+      font-weight: 800;
+      color: var(--text-main);
+      font-size: 0.66rem;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #EAE6DF;
+      padding-bottom: 2px;
+      margin-bottom: 2px;
+    }
+    .exp-items-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+    .exp-items-list li {
+      color: var(--text-main);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .exp-total-line {
+      margin-top: 3px;
+      padding-top: 3px;
+      border-top: 1px dotted var(--border);
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+    }
+    .exp-empty-msg {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 5px 6px 5px 0;
+    }
+
+    /* Modulo 3 Expandido: 5 Columnas de Platillos */
+    .bento-box.mod-3.expanded-module .dishes-grid-4col {
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+
+    /* TIME FILTER SEGMENTED (ESTILO IMAGEN 5 DE REFERENCIA) */
+    .time-filter-segmented {
+      display: none; /* Se activa en modo expandido */
+      background: #F1F5F9;
+      border-radius: var(--radius-full);
+      height: 26px;
+      box-sizing: border-box;
+      padding: 2px 3px;
+      border: 1px solid #E2E8F0;
+      gap: 2px;
+      align-items: center;
+    }
+    .bento-box.mod-3.expanded-module .time-filter-segmented {
+      display: inline-flex !important;
+    }
+    .btn-time-seg {
+      border: none;
+      background: transparent;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #64748B;
+      height: 20px;
+      padding: 0 9px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-time-seg:hover {
+      color: #0F172A;
+    }
+    .btn-time-seg.active {
+      background: #FFFFFF;
+      color: #0F172A;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      font-weight: 800;
+    }
+
+    /* ANALYTICS EXPANDIDOS DENTRO DE CADA TARJETA DE PLATILLO */
+    .dish-expanded-analytics {
+      display: none; /* Oculto en modo compacto */
+      flex-direction: column;
+      gap: 4px;
+      background: #F8F9FA;
+      border: 1px solid #EDE8E1;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-top: 4px;
+    }
+    .bento-box.mod-3.expanded-module .dish-expanded-analytics {
+      display: flex !important;
+    }
+    .dish-live-tables-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      font-size: 0.65rem;
+    }
+    .tag-table-live {
+      background: #FEF2F2;
+      border: 1px solid rgba(225, 29, 72, 0.4);
+      color: var(--red-order);
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      animation: liveGlow 1.7s ease-in-out infinite;
+    }
+    .tag-table-none {
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    .dish-demand-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 68px;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.65rem;
+      margin-top: 3px;
+      padding-top: 4px;
+      border-top: 1px dashed #E5E7EB;
+    }
+    .dish-demand-left {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      gap: 3px;
+    }
+    .dish-demand-count {
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+      font-size: 0.61rem;
+    }
+    .progress-bar-wrap {
+      height: 5px;
+      background: #E2E8F0;
+      border-radius: 999px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--primary));
+      border-radius: 999px;
+      transition: width 0.3s;
+    }
+    /* GRAFICO MONTAÑA / SPARKLINE CON ESPACIO RIGIDO */
+    .sparkline-box {
+      width: 68px;
+      height: 24px;
+      padding: 2px 4px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .sparkline-svg {
+      width: 58px;
+      height: 18px;
+      overflow: hidden;
+      display: block;
+    }
+
+    /* MODAL DE RESUMEN DETALLADO DE COMANDA */
+    .order-detail-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 580px;
+      overflow: hidden;
+      animation: modalSlide 0.2s ease-out;
+    }
+    .order-detail-header {
+      padding: 14px 18px;
+      background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .order-detail-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+    .order-detail-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      align-self: flex-start;
+    }
+    .order-detail-badge.pedido {
+      background: var(--red-light);
+      color: var(--red-order);
+      border: 1px solid rgba(225, 29, 72, 0.3);
+    }
+    .order-detail-badge.entregado {
+      background: var(--green-light);
+      color: var(--green-status);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .order-detail-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .order-detail-table th {
+      background: #F8F9FA;
+      padding: 6px 10px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 0.68rem;
+    }
+    .order-detail-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #F1EFEA;
+      vertical-align: middle;
+    }
+
+  
+    .dot-live {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 3px;
+      vertical-align: middle;
+    }
+    .dot-live.red { background: var(--red-order); animation: liveGlow 1.7s ease-in-out infinite; }
+    .dot-live.green { background: var(--green-status); }
+
+    .btn-table-settle {
+      flex: 1;
+      background: var(--green-light);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #047857;
+      border-radius: 4px;
+      padding: 2px 4px;
+      font-size: 0.62rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: all 0.2s;
+    }
+    .btn-table-settle:hover {
+      background: var(--green-status);
+      color: #FFFFFF;
+      border-color: var(--green-status);
+    }
+    .badge-paid-pill {
+      font-size: 0.58rem;
+      font-weight: 800;
+      background: #F1F5F9;
+      color: #475569;
+      padding: 1px 5px;
+      border-radius: var(--radius-full);
+      border: 1px solid #CBD5E1;
+      margin-left: 4px;
+    }
+
+
+    /* MODAL DE BOLETA ELECTRONICA (ESTILO TICKET TERMICO + PDF / WHATSAPP) */
+    .receipt-modal-card {
+      background: var(--surface-subtle);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 780px;
+      overflow: hidden;
+      animation: modalSlide 0.2s ease-out;
+    }
+    .receipt-layout-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+      padding: 16px 18px;
+      max-height: 78vh;
+      overflow-y: auto;
+    }
+    .thermal-slip {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      padding: 18px 16px;
+      font-family: 'Courier New', Consolas, monospace;
+      color: #111827;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      font-size: 0.72rem;
+      line-height: 1.38;
+    }
+    .thermal-center { text-align: center; }
+    .thermal-brand {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+    .thermal-rule-thick {
+      border-top: 2px solid #111827;
+      margin: 8px 0;
+    }
+    .thermal-rule-dash {
+      border-top: 1px dashed #9CA3AF;
+      margin: 7px 0;
+    }
+    .thermal-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .thermal-items-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 4px 0;
+      font-size: 0.68rem;
+    }
+    .thermal-items-tbl th {
+      text-align: left;
+      border-bottom: 1px solid #111827;
+      padding: 0 6px 4px 0; white-space: nowrap;
+      font-weight: 800;
+    }
+    .thermal-items-tbl td {
+      padding: 5px 6px 5px 0;
+      vertical-align: top;
+    }
+    .thermal-qr-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .receipt-actions-pane {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .btn-wa-pdf {
+      background: #16A34A;
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-wa-pdf:hover { background: #15803D; }
+    .btn-dl-pdf {
+      background: var(--text-main);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 9px 14px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-dl-pdf:hover { background: #334155; }
+
+    /* SUBIDA DE HASTA 5 FOTOGRAFIAS OPTIMIZADAS EN MODAL DE PLATILLO */
+    .dish-upload-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .dish-photo-counter {
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: var(--surface-subtle);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+    .dish-photo-counter.full {
+      background: var(--green-light);
+      color: var(--green-status);
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    .dish-dropzone {
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-subtle);
+      padding: 12px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+    .dish-dropzone:hover,
+    .dish-dropzone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    }
+    .dish-dropzone:hover,
+    .dish-dropzone.dragover {
+      border-color: var(--primary);
+      background: #FFF7F5;
+    }
+    .dish-dropzone.disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .dish-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .dish-photo-slot {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #F8F9FA;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dish-photo-slot.empty {
+      border-style: dashed;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      font-weight: 700;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .dish-photo-slot.empty:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #FFF7F5;
+    }
+    .dish-photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .slot-badge-main {
+      position: absolute;
+      bottom: 3px;
+      left: 3px;
+      background: rgba(201, 83, 50, 0.92);
+      color: #FFFFFF;
+      font-size: 0.54rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .slot-badge-kb {
+      position: absolute;
+      bottom: 3px;
+      right: 3px;
+      background: rgba(15, 23, 42, 0.78);
+      color: #FFFFFF;
+      font-size: 0.52rem;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    .slot-btn-del {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(15, 23, 42, 0.8);
+      color: #FFFFFF;
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slot-btn-del:hover { background: var(--red-order); }
+    .slot-btn-star {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.9);
+      color: #B45309;
+      font-size: 10px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .slot-btn-star:hover { background: #FEF3C7; }
+    .dish-thumb-wrap-admin {
+      position: relative;
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+    }
+    .dish-count-pill {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      background: rgba(15, 23, 42, 0.82);
+      color: #FFFFFF;
+      font-size: 0.55rem;
+      font-weight: 800;
+      padding: 0 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BACKDROP PARA MAXIMIZAR CUALQUIER MODULO -->
+  <div class="expanded-backdrop" id="expandedBackdrop" onclick="collapseAllModules()"></div>
+
+  <!-- NAVBAR PRINCIPAL (LIMPIO, SIN BOTONES DE CREAR) -->
+  <header class="admin-navbar">
+    <div class="nav-inner">
+      <div class="brand-group">
+        <img src="/assets/logo.svg" alt="Espadazo Marino" class="admin-logo" id="adminMainLogo">
+        <span class="badge-status">
+          <span class="status-dot"></span> SISTEMA ONLINE // PC LOCAL ACTIVA
+        </span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-action" id="cloudStatusBadge" onclick="openSettingsModal()" title="Configurar o verificar sincronización con Supabase Cloud" style="border-color: rgba(245, 158, 11, 0.45); color: #D97706; background: rgba(245, 158, 11, 0.1);">
+          💻 Modo Local (Conectar Nube)
+        </button>
+        <button class="btn-action" id="btnThemeToggleAdmin" onclick="toggleTheme()" title="Cambiar a Modo Noche / Modo Día">
+          <span class="icon theme-icon-moon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12.3 2a10 10 0 0 0-1.9 20 10 10 0 0 0 9.8-7.7 8.3 8.3 0 0 1-7.9-12.3z"/></svg>
+          </span>
+          <span class="icon theme-icon-sun" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+          </span>
+          <span id="themeStatusText">Modo Noche</span>
+        </button>
+        <button class="btn-action" style="color:var(--primary); font-weight:700; border-color:rgba(201,83,50,0.35); background:var(--primary-light);" onclick="openBoxModal()">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>
+          📦 Gestión de Caja
+        </button>
+        <button class="btn-action" id="btnAudioToggle" onclick="toggleAudioAlert()">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <span id="audioStatusText">Alerta Sonora: ON</span>
+        </button>
+        <button class="btn-action" onclick="openSettingsModal()">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          Ajustes & Red
+        </button>
+        <a href="/" target="_blank" class="btn-action">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+          Ver Carta
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUB-BARRA DE METRICAS EN VIVO -->
+  <div class="metrics-bar">
+    <div class="metrics-inner">
+      <div class="metrics-group">
+        <div class="pill-metric active-orders">
+          <span>COMANDAS PENDIENTES:</span>
+          <strong id="kpiActiveOrders">0</strong>
+        </div>
+        <div class="pill-metric">
+          <span>ENTREGADOS HOY:</span>
+          <strong id="kpiDeliveredOrders">0</strong>
+        </div>
+        <div class="pill-metric">
+          <span>MESAS OCUPADAS:</span>
+          <strong id="kpiTablesOccupied">0/0</strong>
+        </div>
+        <div class="pill-metric sales">
+          <span>VENTAS TOTALES:</span>
+          <strong id="kpiTotalSales">S/ 0.00</strong>
+        </div>
+      </div>
+      <div style="color: var(--text-muted); font-size: 0.68rem; display: flex; align-items: center; gap: 8px;">
+        <span id="networkModeLabel">Red: Local (192.168.0.100)</span>
+        <span>•</span>
+        <span>Sincronización en vivo: <strong>3s</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENTO VIEWPORT: VISIBLE EN UNA SOLA PANTALLA -->
+  <main class="bento-viewport">
+
+    <!-- MODULO 1: COMANDAS EN VIVO (2 COLUMNAS) -->
+    <section class="bento-box mod-1" id="mod-1">
+      <div class="bento-box-header">
+        <div class="header-left">
+          <span class="bento-tag">[ MOD-01 // COMANDAS EN VIVO ]</span>
+          <h2 class="bento-title">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Pedidos Activos en Cocina
+          </h2>
+        </div>
+        <div class="header-actions">
+          <button class="btn-expand" onclick="toggleExpandModule('mod-1')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            <span class="expand-text">Expandir</span>
+          </button>
+        </div>
+      </div>
+      <div class="mod-1-body">
+        <div class="orders-filter-row">
+          <div class="filter-pills">
+            <button class="btn-filter-pill active" onclick="setOrderFilter('pedido', this)">Pendientes (<span id="countPillsPending">0</span>)</button>
+            <button class="btn-filter-pill" onclick="setOrderFilter('entregado', this)">Entregados (<span id="countPillsDeliveredOpen">0</span>)</button>
+            <button class="btn-filter-pill" onclick="setOrderFilter('finalizado', this)">Finalizadas (<span id="countPillsFinalized">0</span>)</button>
+            <button class="btn-filter-pill" onclick="setOrderFilter('all', this)">Todos</button>
+          </div>
+          <span id="mod1ColHint" style="font-size: 0.65rem; color: var(--text-muted);">2 columnas de comandas</span>
+        </div>
+        <!-- CONTENEDOR 2 COLUMNAS DE COMANDAS -->
+        <div class="orders-grid-3col" id="ordersContainer">
+          <!-- Renderizado dinámico -->
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULO 2: GESTION DE MESAS & CODIGOS QR (4 COLUMNAS CON BOTON CREAR MESA) -->
+    <section class="bento-box mod-2" id="mod-2">
+      <div class="bento-box-header">
+        <div class="header-left">
+          <span class="bento-tag">[ MOD-02 // MESAS & QR ]</span>
+          <h2 class="bento-title">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="var(--accent-blue)"><path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2zM7 7h4v4H7zm6 0h4v4h-4zm-6 6h4v4H7zm6 6h4v-4h-4z"/></svg>
+            Mesas y Códigos QR
+          </h2>
+        </div>
+        <div class="header-actions">
+          <!-- BOTON DE CREAR MESA AQUÍ EN SU MODULO -->
+          <button class="btn-module-cta blue" onclick="openTableModal()">
+            <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Crear Mesa
+          </button>
+          <button class="btn-expand" onclick="toggleExpandModule('mod-2')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            <span class="expand-text">Expandir</span>
+          </button>
+        </div>
+      </div>
+      <div class="mod-2-body">
+        <!-- CONTENEDOR 4 COLUMNAS DE MESAS -->
+        <div class="tables-grid-4col" id="tablesContainer">
+          <!-- Renderizado dinámico -->
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULO 3: CATALOGO DE PLATILLOS (4 COLUMNAS CON BOTON NUEVO PLATILLO) -->
+    <section class="bento-box mod-3" id="mod-3">
+      <div class="bento-box-header">
+        <div class="header-left">
+          <span class="bento-tag">[ MOD-03 // PLATILLOS ]</span>
+          <h2 class="bento-title">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="var(--primary)"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.48L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1 1H2c-.55 0-1-.45-1-1zm15.03-7c0-8-15.03-8-15.03 0h15.03zM1.02 17h15v2h-15z"/></svg>
+            Catálogo de Platillos & Precios
+          </h2>
+        </div>
+        <div class="header-actions">
+          <!-- BOTON DE CREAR NUEVO PLATILLO AQUÍ EN SU MODULO -->
+          <!-- FILTRO DE TIEMPO (ESTILO IMAGEN 5 - VISIBLE AL EXPANDIR) -->
+          <div class="time-filter-segmented" id="mod3TimeFilter">
+            <button class="btn-time-seg active" onclick="setTimeFilter('24h', this)">24h</button>
+            <button class="btn-time-seg" onclick="setTimeFilter('1W', this)">1W</button>
+            <button class="btn-time-seg" onclick="setTimeFilter('1M', this)">1M</button>
+            <button class="btn-time-seg" onclick="setTimeFilter('1Y', this)">1Y</button>
+            <button class="btn-time-seg" onclick="setTimeFilter('All', this)">All</button>
+          </div>
+          <button class="btn-module-cta" onclick="openDishModal()">
+            <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Nuevo Platillo
+          </button>
+          <button class="btn-expand" onclick="toggleExpandModule('mod-3')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            <span class="expand-text">Expandir</span>
+          </button>
+        </div>
+      </div>
+      <div class="mod-3-body">
+        <!-- FILTRO DE CATEGORIAS -->
+        <div class="category-filter-bar">
+          <button class="btn-cat-pill active" onclick="filterDishes('all', this)">Todos los Platillos</button>
+          <button class="btn-cat-pill" onclick="filterDishes('combos', this)">Combos & Dúos</button>
+          <button class="btn-cat-pill" onclick="filterDishes('ceviches', this)">Ceviches al Paso</button>
+          <button class="btn-cat-pill" onclick="filterDishes('chicharrones', this)">Chicharrones</button>
+          <button class="btn-cat-pill" onclick="filterDishes('wok', this)">Wok & Arroces</button>
+          <button class="btn-cat-pill" onclick="filterDishes('fuentes', this)">Fuentes</button>
+          <button class="btn-cat-pill" onclick="filterDishes('bebidas', this)">Bebidas</button>
+        </div>
+        <!-- CONTENEDOR 4 COLUMNAS DE PLATILLOS -->
+        <div class="dishes-grid-4col" id="dishesGridContainer">
+          <!-- Renderizado dinámico en 4 columnas -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER THE FROG S.A.C -->
+  <footer class="admin-footer">
+    <div class="footer-inner">
+      <span>Sistema creado por <strong>The Frog S.A.C</strong> • Todos los derechos reservados</span>
+      <span>Espadazo Marino • Plataforma Operativa v2.5</span>
+    </div>
+  </footer>
+
+
+  <!-- MODAL: CREAR / EDITAR PLATILLO -->
+  <div class="modal-backdrop" id="dishModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="dishModalTitle">Nuevo Platillo de la Carta</h3>
+        <button class="modal-close" onclick="closeDishModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="dishIdInput">
+        <div class="form-group">
+          <label>Nombre del Platillo</label>
+          <input type="text" id="dishNameInput" placeholder="Ej: Ceviche Carretillero Especial">
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <select id="dishCategoryInput">
+            <option value="combos">Combos & Dúos</option>
+            <option value="ceviches">Ceviches al Paso</option>
+            <option value="chicharrones">Chicharrones Crocantes</option>
+            <option value="wok">Wok & Arroces</option>
+            <option value="fuentes">Fuentes para Compartir</option>
+            <option value="bebidas">Bebidas Caseras</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Precio (S/)</label>
+          <input type="number" step="0.5" id="dishPriceInput" placeholder="35.00">
+        </div>
+        <div class="form-group">
+          <div class="dish-upload-header">
+            <label style="margin:0;">Fotografías del Platillo (Solo 5 máx. • Auto-WebP)</label>
+            <span class="dish-photo-counter" id="dishPhotoCounter">0 / 5 fotos</span>
+          </div>
+          <input type="file" id="dishFileInput" accept="image/*" multiple style="display:none;" onchange="handleDishFilesSelect(this.files)">
+          <div class="dish-dropzone" id="dishDropzone" onclick="triggerDishFilePicker()"
+               ondragover="event.preventDefault(); this.classList.add('dragover');"
+               ondragleave="this.classList.remove('dragover');"
+               ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDishFilesSelect(event.dataTransfer.files);">
+            <div id="dishUploadStatusText" style="font-size:0.74rem; font-weight:700; color:var(--text-main);">
+              Haz clic o arrastra hasta 5 fotografías aquí
+            </div>
+            <div style="font-size:0.64rem; color:var(--text-muted); margin-top:2px;">
+              Se optimizan y comprimen automáticamente al subir (WebP HD máx. 960px)
+            </div>
+          </div>
+          <div class="dish-slots-grid" id="dishSlotsGrid"></div>
+        </div>
+        <div class="form-group">
+          <label>Descripción Corta de Ingredientes</label>
+          <textarea id="dishDescInput" rows="2" placeholder="Pescado del día en dados, leche de tigre cremosa..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Insignia Destacada</label>
+          <input type="text" id="dishBadgeInput" placeholder="RECOMENDADO / CLÁSICO DEL PUERTO">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-action" onclick="closeDishModal()">Cancelar</button>
+        <button class="btn-action primary" onclick="saveDish()">Guardar Platillo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR MESA -->
+  <div class="modal-backdrop" id="tableModal">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-head">
+        <h3>Dar de Alta Nueva Mesa</h3>
+        <button class="modal-close" onclick="closeTableModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nombre o Número de Mesa</label>
+          <input type="text" id="tableNameInput" placeholder="Ej: Mesa 10, Barra 3, Terraza 1">
+        </div>
+        <div class="form-group">
+          <label>Capacidad de Comensales</label>
+          <input type="number" id="tableCapInput" value="4" min="1" max="20">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-action" onclick="closeTableModal()">Cancelar</button>
+        <button class="btn-action primary" onclick="saveTable()">Crear Mesa & QR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AJUSTES & CONEXION A INTERNET -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-card" style="max-width: 530px;">
+      <div class="modal-head">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="var(--accent-blue)"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <h3 style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800;">Configuración de Red &amp; Seguridad</h3>
+        </div>
+        <button class="modal-close" onclick="closeSettingsModal()" title="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info-banner">
+          <div class="banner-title">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            <span>Conectividad de Carta Digital (Internet 4G/5G &amp; Red Local)</span>
+          </div>
+          <p class="banner-desc">
+            Al colocar aquí tu URL pública de Cloudflare o dominio propio, <strong>todos los códigos QR de cada mesa se actualizarán automáticamente</strong> para que tus clientes puedan pedir desde sus datos móviles.
+          </p>
+        </div>
+        <div class="form-group">
+          <label>URL Pública de Internet (Cloudflare / Dominio)</label>
+          <span class="form-hint">Enlace seguro que permite a los clientes abrir la carta sin estar conectados al Wi-Fi del local.</span>
+          <input type="text" id="settingsPublicUrl" placeholder="https://espadazo-marino.trycloudflare.com">
+        </div>
+        <div class="form-group">
+          <label>IP Local Detectada en Wi-Fi del Local</label>
+          <span class="form-hint">Dirección interna para mozos, comandas de barra y tablets conectadas a la red local.</span>
+          <input type="text" id="settingsDetectedIp" readonly style="cursor: default;">
+        </div>
+        <div class="form-group">
+          <label>Nuevo PIN de Acceso Administrador (Opcional)</label>
+          <span class="form-hint">Clave numérica de seguridad para entrar al panel Bento Admin (dejar vacío para mantener el actual).</span>
+          <input type="password" id="settingsPinInput" placeholder="Dejar vacío para conservar el actual">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp de Contacto (con código de país)</label>
+          <span class="form-hint">Número oficial donde tus clientes enviarán las capturas de pago con Yape o Plin.</span>
+          <input type="text" id="settingsPhoneInput" placeholder="51987654321">
+        </div>
+
+        <div style="margin-top: 6px; padding-top: 14px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px; font-family:var(--font-heading); font-size:0.88rem; font-weight:800; color:var(--accent-blue);">
+              ☁️ Base de Datos Híbrida (Supabase Cloud)
+            </div>
+            <span id="settingsCloudPill" class="box-card-badge">Opcional • Respaldo 24/7</span>
+          </div>
+          <span class="form-hint" style="margin-top:-4px;">Conecta Supabase para respaldar comandas, platillos y fotos en la nube en tiempo real entre tu PC local y Vercel.</span>
+          <div class="form-group">
+            <label>Supabase Project URL</label>
+            <input type="text" id="settingsSupabaseUrl" placeholder="https://xxxx.supabase.co">
+          </div>
+          <div class="form-group">
+            <label>Supabase API Key (Anon o Service Role)</label>
+            <input type="password" id="settingsSupabaseKey" placeholder="eyJhbGci... o sb_secret_... (dejar vacío si ya está configurada)">
+          </div>
+          <div class="form-group">
+            <label>PostgreSQL Connection URI (Para Auto-Crear Tablas)</label>
+            <input type="password" id="settingsPostgresUrl" placeholder="postgresql://postgres:[PASSWORD]@db.xxxx.supabase.co:5432/postgres">
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn-box-cta blue" style="flex:1; justify-content:center;" id="btnSyncSupabase" onclick="syncWithSupabase()">
+              ☁️ Conectar &amp; Sincronizar Ahora
+            </button>
+            <button type="button" class="btn-action" onclick="copySupabaseSql()">
+              📋 Copiar SQL de Tablas
+            </button>
+          </div>
+          <div id="cloudSyncResultMsg" style="display:none; font-size:0.73rem; padding:8px 10px; border-radius:8px; line-height:1.4;"></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-action" onclick="closeSettingsModal()">Cancelar</button>
+        <button class="btn-action primary" onclick="saveSettings()">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+          Guardar Ajustes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GESTION & MIGRACION DE CAJA -->
+  <div class="modal-backdrop" id="boxModal">
+    <div class="modal-card" style="max-width: 590px;">
+      <div class="modal-head">
+        <div>
+          <h3 style="font-family: var(--font-heading); font-size: 1.08rem; font-weight: 800;">📦 Gestión &amp; Migración de Caja</h3>
+          <span style="font-size: 0.73rem; color: var(--text-muted);">Mueve tu restaurante a otra PC, respalda todo o inicia un nuevo turno</span>
+        </div>
+        <button class="modal-close" onclick="closeBoxModal()" title="Cerrar">&times;</button>
+      </div>
+      <div class="modal-body" style="gap: 12px;">
+        <!-- SECCION 1: EXPORTAR -->
+        <div class="box-action-card export">
+          <div class="box-card-header">
+            <div class="box-card-title-group">
+              <span class="box-icon-pill blue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              </span>
+              <div>
+                <h4 class="box-card-title">1. Migrar Caja a Otra PC (Exportar)</h4>
+                <span class="box-card-badge">Empaquetado Seguro</span>
+              </div>
+            </div>
+            <button class="btn-box-cta blue" onclick="exportBoxPackage()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              Descargar Paquete (.caja)
+            </button>
+          </div>
+          <p class="box-card-desc">
+            Descarga un único archivo con todo tu restaurante: menú de platillos, fotos subidas, mesas, configuración y ventas. Guárdalo en un USB o envíalo por WhatsApp/Drive para abrirlo en la otra computadora.
+          </p>
+        </div>
+
+        <!-- SECCION 2: IMPORTAR -->
+        <div class="box-action-card import">
+          <div class="box-card-header">
+            <div class="box-card-title-group">
+              <span class="box-icon-pill green">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+              </span>
+              <div>
+                <h4 class="box-card-title">2. Cargar Caja en esta PC (Importar)</h4>
+                <span class="box-card-badge green">Respaldo Automático Previo</span>
+              </div>
+            </div>
+          </div>
+          <p class="box-card-desc">
+            Selecciona un archivo <code>.caja</code> o <code>.zip</code> exportado previamente. El sistema restaurará el menú, las fotos y ventas en esta computadora (se genera un respaldo preventivo automático del estado actual).
+          </p>
+          <div class="box-import-row">
+            <label class="custom-file-button" for="boxImportFileInput">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+              <span id="boxFileLabelText">Seleccionar archivo .caja o .zip...</span>
+            </label>
+            <input type="file" id="boxImportFileInput" accept=".caja,.zip" style="display:none;" onchange="handleBoxFileSelected(this)">
+            <button class="btn-box-cta green" onclick="importBoxPackage()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              Importar y Restaurar
+            </button>
+          </div>
+        </div>
+
+        <!-- SECCION 3: NUEVA CAJA -->
+        <div class="box-action-card shift">
+          <div class="box-card-header">
+            <div class="box-card-title-group">
+              <span class="box-icon-pill amber">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+              </span>
+              <div>
+                <h4 class="box-card-title">3. Iniciar Nueva Caja / Turno</h4>
+                <span class="box-card-badge amber">Cierre Diario</span>
+              </div>
+            </div>
+          </div>
+          <p class="box-card-desc">
+            Archiva automáticamente las ventas en las copias de seguridad de la PC y limpia la sesión actual de mesas para un nuevo turno.
+          </p>
+          <div class="box-shift-actions">
+            <button class="btn-box-shift-primary" onclick="startNewBox('new_shift')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+              Iniciar Nuevo Turno (Limpiar Ventas &amp; Mesas, Conservar Carta)
+            </button>
+            <button class="btn-box-shift-danger" onclick="startNewBox('clean_start')">
+              ✨ Iniciar Restaurante en Blanco
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-action" onclick="closeBoxModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VISTA DE TARJETA QR DE MESA -->
+  <div class="modal-backdrop" id="qrModal">
+    <div class="modal-card" style="max-width: 480px; text-align: center;">
+      <div class="modal-head">
+        <h3 id="qrModalTitle">Tarjeta QR para Mesa</h3>
+        <button class="modal-close" onclick="closeQrModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="align-items: center;">
+        <img id="qrModalImage" src="" alt="Código QR de Mesa" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+      </div>
+      <div class="modal-foot" style="justify-content: center; gap: 8px; flex-wrap: wrap;">
+        <a id="qrOpenMenuBtn" href="/" target="_blank" class="btn-action" style="text-decoration:none;">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+          Ver Carta Vinculada
+        </a>
+        <a id="qrDownloadBtn" href="" download="QR_MESA.png" class="btn-action primary">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Descargar Tarjeta QR
+        </a>
+        <button class="btn-action" onclick="closeQrModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGICA JS -->
+  <script>
+
+    // ESTADO GLOBAL & ANALYTICS
+    let allOrdersCache = [];
+    let currentTimeFilter = '24h'; // '24h', '1W', '1M', '1Y', 'All'
+    let currentSelectedOrderId = null;
+
+    // FILTRO DE TIEMPO (ESTILO IMAGEN 5)
+    function setTimeFilter(period, btn) {
+      currentTimeFilter = period;
+      document.querySelectorAll(".btn-time-seg").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderDishesGrid();
+    }
+
+    // CALCULO DE ANALYTICS DE PLATILLO: MESAS ACTIVAS, DEMANDA Y MONTAÑA SPARKLINE (IMAGEN 4)
+    function getDishDemandStats(dishId, dishName, timeRange) {
+      let todayCount = 0;
+      let activeTables = [];
+
+      (allOrdersCache || []).forEach(ord => {
+        (ord.items || []).forEach(it => {
+          const match = (it.id && it.id === dishId) ||
+                        (it.name && dishName && it.name.trim().toLowerCase() === dishName.trim().toLowerCase()) ||
+                        (dishName && it.name && dishName.toLowerCase().includes(it.name.toLowerCase()));
+          if (match) {
+            todayCount += (it.qty || 1);
+            if (ord.status === 'pedido' && !ord.paid && ord.table_name && !activeTables.includes(ord.table_name)) {
+              activeTables.push(ord.table_name);
+            }
+          }
+        });
+      });
+
+      let hash = 0;
+      for (let i = 0; i < (dishId || 'x').length; i++) hash = (hash * 31 + dishId.charCodeAt(i)) % 100;
+
+      let count = todayCount;
+      let totalPool = 1;
+
+      if (timeRange === '24h') {
+        count = Math.max(todayCount, (hash % 6) + 2);
+        totalPool = 40;
+      } else if (timeRange === '1W') {
+        count = Math.max(todayCount * 5, (hash % 15) + 24);
+        totalPool = 280;
+      } else if (timeRange === '1M') {
+        count = Math.max(todayCount * 22, (hash % 45) + 85);
+        totalPool = 1200;
+      } else if (timeRange === '1Y') {
+        count = Math.max(todayCount * 260, (hash * 10) + 720);
+        totalPool = 9500;
+      } else if (timeRange === 'All') {
+        count = Math.max(todayCount * 380, (hash * 18) + 1200);
+        totalPool = 15000;
+      }
+
+      const percent = Math.min(100, Math.max(8, Math.round((count / totalPool) * 100 * 3)));
+
+      // Generar puntos de montaña sparkline (Imagen 4)
+      const w = 65;
+      let points = [];
+      for (let i = 0; i < 9; i++) {
+        const x = (i / 8) * w;
+        const seedVal = Math.sin((i + 1) * 1.8 + hash) * 5.5 + Math.cos(i * 0.9) * 2;
+        let y = 10 - seedVal;
+        y = Math.max(2, Math.min(16, y));
+        points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+      }
+      const pathD = "M " + points.join(" L ");
+      const isTrendingUp = (hash % 4 !== 0);
+      const strokeColor = isTrendingUp ? "#10B981" : "#E11D48";
+
+      return {
+        count: count,
+        percent: percent,
+        activeTables: activeTables,
+        sparklineD: pathD,
+        strokeColor: strokeColor
+      };
+    }
+
+    // MODAL DE RESUMEN DETALLADO DE COMANDA
+    function openOrderDetailModal(orderId) {
+      currentSelectedOrderId = orderId;
+      const ord = (allOrdersCache || []).find(o => o.id === orderId);
+      if (!ord) return;
+
+      document.getElementById("modalOrderTitle").innerText = `Comanda #${ord.id}`;
+      document.getElementById("modalOrderSub").innerText = `${ord.table_name || 'Mesa'} • Hora: ${ord.time || '--'} • ID: ${ord.id}`;
+
+      const isFinalized = !!ord.paid;
+      const isPending = !isFinalized && ord.status === 'pedido';
+      const badge = document.getElementById("modalOrderBadge");
+      const toggleBtn = document.getElementById("modalOrderToggleBtn");
+
+      if (isFinalized) {
+        badge.className = 'order-detail-badge finalizado';
+        badge.innerHTML = `✓ FINALIZADA • COBRADA${ord.paid_at ? ' (' + ord.paid_at + ')' : ''}`;
+        toggleBtn.style.display = 'none';
+      } else {
+        toggleBtn.style.display = 'inline-flex';
+        badge.className = `order-detail-badge ${isPending ? 'pedido' : 'entregado'}`;
+        badge.innerHTML = isPending ? '● EN PREPARACIÓN (PENDIENTE)' : '✓ ENTREGADO AL CLIENTE (CUENTA ABIERTA)';
+        toggleBtn.innerText = isPending ? 'Marcar como Entregado' : 'Reabrir / Marcar Pendiente';
+        toggleBtn.className = isPending ? 'btn-action primary' : 'btn-action';
+      }
+
+      const tbody = document.getElementById("modalOrderItemsBody");
+      tbody.innerHTML = (ord.items || []).map(it => `
+        <tr>
+          <td><strong style="color:var(--primary); font-size:0.85rem;">${it.qty || 1}x</strong></td>
+          <td>
+            <div style="font-weight:700; color:var(--text-main);">${it.name}</div>
+            ${it.option ? `<div style="font-size:0.7rem; color:var(--text-muted);">${it.option}</div>` : ''}
+          </td>
+          <td style="text-align: right; color:var(--text-muted);">S/ ${(it.price || 0).toFixed(2)}</td>
+          <td style="text-align: right; font-weight:800; font-family:var(--font-heading);">S/ ${((it.price || 0) * (it.qty || 1)).toFixed(2)}</td>
+        </tr>
+      `).join('');
+
+      const notesBox = document.getElementById("modalOrderNotesBox");
+      if (ord.notes && ord.notes.trim()) {
+        document.getElementById("modalOrderNotesText").innerText = ord.notes;
+        notesBox.style.display = 'block';
+      } else {
+        notesBox.style.display = 'none';
+      }
+
+      document.getElementById("modalOrderServiceMode").innerText = ord.service_mode || 'En Barra';
+      document.getElementById("modalOrderTotal").innerText = `S/ ${(ord.total || 0).toFixed(2)}`;
+
+      document.getElementById("orderDetailModal").classList.add("active");
+    }
+
+    function closeOrderDetailModal() {
+      document.getElementById("orderDetailModal").classList.remove("active");
+    }
+
+    async function toggleModalOrderStatus() {
+      if (!currentSelectedOrderId) return;
+      await toggleOrderStatus(currentSelectedOrderId);
+      openOrderDetailModal(currentSelectedOrderId);
+    }
+
+    function printOrderComanda() {
+      window.print();
+    }
+
+    let audioCtx = null;
+    let audioAlertEnabled = true;
+
+    function playKitchenBell() {
+      if (!audioAlertEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.9);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.9);
+      } catch (e) {
+        console.warn("Audio Context blocked:", e);
+      }
+    }
+
+    function toggleAudioAlert() {
+      audioAlertEnabled = !audioAlertEnabled;
+      const btn = document.getElementById("audioStatusText");
+      btn.innerText = audioAlertEnabled ? "Alerta Sonora: ON" : "Alerta Sonora: OFF";
+      if (audioAlertEnabled) {
+        playKitchenBell();
+      }
+    }
+
+    // EXPANSION / FULLSCREEN DE MODULOS
+    function toggleExpandModule(modId) {
+      const box = document.getElementById(modId);
+      const backdrop = document.getElementById("expandedBackdrop");
+      const btnText = box.querySelector(".btn-expand .expand-text");
+      
+      const isExpanded = box.classList.contains("expanded-module");
+      if (isExpanded) {
+        box.classList.remove("expanded-module");
+        backdrop.classList.remove("active");
+        if (btnText) btnText.innerText = "Expandir";
+        if (modId === 'mod-1') { const h = document.getElementById('mod1ColHint'); if (h) h.innerText = '2 columnas de comandas'; }
+      } else {
+        document.querySelectorAll(".bento-box.expanded-module").forEach(b => {
+          b.classList.remove("expanded-module");
+          const t = b.querySelector(".btn-expand .expand-text");
+          if (t) t.innerText = "Expandir";
+        });
+        box.classList.add("expanded-module");
+        backdrop.classList.add("active");
+        if (btnText) btnText.innerText = "Contraer";
+        const h = document.getElementById('mod1ColHint');
+        if (h) h.innerText = (modId === 'mod-1') ? '5 columnas de comandas' : '2 columnas de comandas';
+      }
+    }
+
+    function collapseAllModules() {
+      document.querySelectorAll(".bento-box.expanded-module").forEach(b => {
+        b.classList.remove("expanded-module");
+        const t = b.querySelector(".btn-expand .expand-text");
+        if (t) t.innerText = "Expandir";
+      });
+      const h = document.getElementById('mod1ColHint');
+      if (h) h.innerText = '2 columnas de comandas';
+      document.getElementById("expandedBackdrop").classList.remove("active");
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") collapseAllModules();
+    });
+
+    // ESTADO DE DATOS
+    let activeFilter = 'pedido';
+    let isHoldingConfirm = false;
+
+    function initHoldButtons(rootEl, onHoldComplete) {
+      const buttons = (rootEl || document).querySelectorAll('.btn-hold-3s');
+      buttons.forEach(btn => {
+        if (btn.dataset.holdBound === '1') return;
+        btn.dataset.holdBound = '1';
+
+        const duration = parseInt(btn.dataset.holdMs || '3000', 10);
+        const fillEl = btn.querySelector('.hold-fill');
+        const labelEl = btn.querySelector('.hold-label');
+        const defaultLabelHtml = labelEl ? labelEl.innerHTML : btn.innerHTML;
+        let rafId = null;
+        let startTs = 0;
+        let resetTimer = null;
+
+        const cancelHold = (showHint) => {
+          if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
+          isHoldingConfirm = false;
+          if (fillEl) fillEl.style.width = '0%';
+          if (labelEl) {
+            if (showHint) {
+              clearTimeout(resetTimer);
+              labelEl.innerText = 'Mantén 3s...';
+              resetTimer = setTimeout(() => { labelEl.innerHTML = defaultLabelHtml; }, 950);
+            } else {
+              labelEl.innerHTML = defaultLabelHtml;
+            }
+          }
+        };
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        });
+
+        btn.addEventListener('pointerdown', (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+          if (rafId || btn.disabled) return;
+          e.stopPropagation();
+          e.preventDefault();
+          clearTimeout(resetTimer);
+          isHoldingConfirm = true;
+          startTs = performance.now();
+
+          const step = (now) => {
+            const elapsed = now - startTs;
+            const pct = Math.min(100, (elapsed / duration) * 100);
+            const remSec = Math.max(1, Math.ceil((duration - elapsed) / 1000));
+            if (fillEl) fillEl.style.width = pct.toFixed(1) + '%';
+            if (labelEl) labelEl.innerText = `Confirmando ${remSec}s...`;
+
+            if (elapsed >= duration) {
+              rafId = null;
+              isHoldingConfirm = false;
+              if (labelEl) labelEl.innerText = 'Procesando...';
+              onHoldComplete(btn, () => {
+                if (fillEl) fillEl.style.width = '0%';
+                if (labelEl) labelEl.innerHTML = defaultLabelHtml;
+              });
+              return;
+            }
+            rafId = requestAnimationFrame(step);
+          };
+          rafId = requestAnimationFrame(step);
+        });
+
+        btn.addEventListener('pointerup', (e) => {
+          e.stopPropagation();
+          if (rafId) cancelHold(true);
+        });
+        btn.addEventListener('pointerleave', () => {
+          if (rafId) cancelHold(false);
+        });
+        btn.addEventListener('pointercancel', () => {
+          if (rafId) cancelHold(false);
+        });
+      });
+    }
+    let activeCategoryFilter = 'all';
+    let prevOrdersCount = 0;
+    let allDishesCache = [];
+
+    const CATEGORY_NAMES = {
+      combos: "Combos & Dúos",
+      ceviches: "Ceviches al Paso",
+      chicharrones: "Chicharrones",
+      wok: "Wok & Arroces",
+      fuentes: "Fuentes",
+      bebidas: "Bebidas"
+    };
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/stats', { cache: 'no-store' });
+        const data = await res.json();
+        document.getElementById("kpiActiveOrders").innerText = data.active_orders_count || 0;
+        document.getElementById("kpiDeliveredOrders").innerText = data.delivered_orders_count || 0;
+        document.getElementById("kpiTablesOccupied").innerText = `${data.tables_occupied || 0}/${data.tables_total || 0}`;
+        document.getElementById("kpiTotalSales").innerText = `S/ ${(data.total_sales_today || 0).toFixed(2)}`;
+        document.getElementById("countPillsPending").innerText = data.active_orders_count || 0;
+        const elDelivOpen = document.getElementById("countPillsDeliveredOpen");
+        if (elDelivOpen) elDelivOpen.innerText = data.delivered_open_count || 0;
+        const elFinalized = document.getElementById("countPillsFinalized");
+        if (elFinalized) elFinalized.innerText = data.finalized_orders_count || 0;
+
+        if (data.active_orders_count > prevOrdersCount && prevOrdersCount !== 0) {
+          playKitchenBell();
+        }
+        prevOrdersCount = data.active_orders_count;
+
+        if (data.public_url) {
+          document.getElementById("networkModeLabel").innerHTML = `<span style="color: var(--green-status); font-weight:700;">● Internet:</span> ${data.public_url.replace('https://', '')}`;
+        } else {
+          document.getElementById("networkModeLabel").innerText = `Red Wi-Fi: ${data.detected_ip || '192.168.0.100'}:8080`;
+        }
+
+        const cloudBadge = document.getElementById("cloudStatusBadge");
+        if (cloudBadge) {
+          if (data.cloud_enabled) {
+            cloudBadge.innerHTML = '☁️ Nube Supabase Activa';
+            cloudBadge.style.borderColor = 'rgba(16, 185, 129, 0.45)';
+            cloudBadge.style.color = '#10B981';
+            cloudBadge.style.background = 'rgba(16, 185, 129, 0.12)';
+          } else {
+            cloudBadge.innerHTML = '💻 Modo Local (Conectar Nube)';
+            cloudBadge.style.borderColor = 'rgba(245, 158, 11, 0.45)';
+            cloudBadge.style.color = '#D97706';
+            cloudBadge.style.background = 'rgba(245, 158, 11, 0.1)';
+          }
+        }
+        const envBadge = document.querySelector(".badge-status");
+        if (envBadge && data.environment === "cloud") {
+          envBadge.innerHTML = `<span class="status-dot"></span> SISTEMA ONLINE // NUBE VERCEL${data.cloud_enabled ? ' + SUPABASE' : ''}`;
+        }
+
+        if (data.supabase_url && data.supabase_anon_key) {
+          initSupabaseRealtime(data.supabase_url, data.supabase_anon_key);
+        }
+      } catch (e) {
+        console.error("Error loading stats:", e);
+      }
+    }
+
+    let _sbRealtimeClient = null;
+    let _sbRealtimeKeySig = "";
+    function fetchDashboardData() {
+      loadStats();
+      loadOrders();
+      loadTables();
+      loadDishes();
+    }
+
+    function initSupabaseRealtime(url, anonKey) {
+      if (!url || !anonKey || typeof window.supabase === "undefined") return;
+      const sig = url + "|" + anonKey;
+      if (_sbRealtimeClient && _sbRealtimeKeySig === sig) return;
+      try {
+        _sbRealtimeKeySig = sig;
+        _sbRealtimeClient = window.supabase.createClient(url, anonKey);
+        _sbRealtimeClient
+          .channel("espadazo-live-orders")
+          .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+            fetchDashboardData();
+          })
+          .on("postgres_changes", { event: "*", schema: "public", table: "tables" }, () => {
+            loadTables();
+          })
+          .subscribe();
+      } catch (err) {
+        console.warn("Realtime no disponible:", err);
+      }
+    }
+
+    // ========================================================
+    // MODULO 1: COMANDAS EN 2 COLUMNAS
+    // ========================================================
+    async function loadOrders() {
+      try {
+        if (isHoldingConfirm) return;
+        let url = '/api/orders';
+        if (activeFilter !== 'all') url += `?status=${activeFilter}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        const orders = await res.json();
+        allOrdersCache = orders;
+        // Sincronizar mesas y tags de platillos cuando actualizan las comandas
+        setTimeout(() => {
+          loadTables();
+          if (allDishesCache && allDishesCache.length > 0) renderDishesGrid();
+        }, 50);
+
+        if (isHoldingConfirm) return;
+        const container = document.getElementById("ordersContainer");
+        if (orders.length === 0) {
+          container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.74rem;">
+            No hay comandas en este filtro.
+          </div>`;
+          return;
+        }
+
+        // Separar pedidos activos (Pendientes primero, luego Entregados abiertos) de Finalizados
+        const activeOrders = orders
+          .filter(o => !o.paid)
+          .sort((a, b) => (a.status === 'pedido' ? 0 : 1) - (b.status === 'pedido' ? 0 : 1));
+        const finalizedOrders = orders.filter(o => !!o.paid);
+
+        let htmlOut = activeOrders.map(ord => {
+          const isPending = ord.status === 'pedido';
+          const cardStateClass = isPending ? 'status-pedido' : 'status-entregado';
+          const itemsHtml = (ord.items || []).map(it => `
+            <li class="order-item-line">
+              <span class="order-item-name">${it.qty || 1}x ${it.name} ${it.option ? `<span class="order-item-opt">(${it.option})</span>` : ''}</span>
+              <span class="order-item-subtotal">S/ ${((it.price || 0) * (it.qty || 1)).toFixed(2)}</span>
+            </li>
+          `).join('');
+
+          const footBtnHtml = isPending ? `
+            <button class="btn-status-toggle is-pedido" onclick="event.stopPropagation(); toggleOrderStatus('${ord.id}')" title="Clic para marcar como entregado">
+              <svg class="icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              MARCAR LISTO
+            </button>
+          ` : `
+            <button class="btn-status-toggle is-entregado" onclick="event.stopPropagation(); toggleOrderStatus('${ord.id}')" title="Clic para reabrir si es necesario">
+              <svg class="icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+              ENTREGADO
+            </button>
+          `;
+
+          return `
+            <div class="order-card ${cardStateClass}" onclick="openOrderDetailModal('${ord.id}')" title="Clic para ver resumen detallado de comanda">
+              <div>
+                <div class="order-head">
+                  <span class="order-table-title">
+                    <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    ${ord.table_name || 'Mesa'} <span class="order-id-label">${ord.id}</span>
+                  </span>
+                  <span class="order-time-text">
+                    <svg class="icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    ${ord.time || ''}
+                  </span>
+                </div>
+                <ul class="order-items-box">
+                  ${itemsHtml}
+                </ul>
+                ${ord.notes ? `<div class="order-note-alert">Nota: ${ord.notes}</div>` : ''}
+              </div>
+              <div class="order-foot">
+                <span class="order-total-amount">S/ ${(ord.total || 0).toFixed(2)}</span>
+                ${footBtnHtml}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Seccion ultra compacta al final para pedidos finalizados (mesa, monto, hora)
+        if (finalizedOrders.length > 0) {
+          const minisHtml = finalizedOrders.map(ord => `
+            <div class="finalized-mini-card" onclick="openOrderDetailModal('${ord.id}')" title="Comanda ${ord.id} • Clic para ver detalle">
+              <span class="finalized-mini-mesa">${ord.table_name || 'Mesa'}</span>
+              <span class="finalized-mini-meta">
+                <span class="finalized-mini-monto">S/ ${(ord.total || 0).toFixed(2)}</span>
+                <span class="finalized-mini-hora">${ord.paid_at || ord.time || ''}</span>
+              </span>
+            </div>
+          `).join('');
+
+          htmlOut += `
+            <div class="finalized-section-wrap" style="${activeOrders.length === 0 ? 'margin-top:0; border-top:none; padding-top:2px;' : ''}">
+              <div class="finalized-section-title">Pedidos finalizados (${finalizedOrders.length})</div>
+              <div class="finalized-mini-grid">
+                ${minisHtml}
+              </div>
+            </div>
+          `;
+        }
+
+        container.innerHTML = htmlOut;
+      } catch (e) {
+        console.error("Error loading orders:", e);
+      }
+    }
+
+    async function toggleOrderStatus(orderId) {
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      loadOrders();
+      loadStats();
+    }
+
+    function setOrderFilter(filter, btn) {
+      activeFilter = filter;
+      document.querySelectorAll(".btn-filter-pill").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      loadOrders();
+    }
+
+    // ========================================================
+    // MODULO 2: MESAS EN 4 COLUMNAS
+    // ========================================================
+    
+    let allTablesCache = [];
+    let currentSettlingTableId = null;
+
+    function openTableSettleModal(tableId) {
+      currentSettlingTableId = tableId;
+      bindSettleHoldButton();
+      const t = allTablesCache.find(x => String(x.id) === String(tableId));
+      if (!t) return;
+
+      document.getElementById("settleModalTitle").innerText = `Cuenta Consolidada — ${t.name}`;
+      document.getElementById("settleModalSub").innerText = `${t.capacity || 4} sillas • ${t.unpaid_orders_count || 0} comanda(s) acumuladas`;
+      document.getElementById("settleModalOrderCount").innerText = `${t.unpaid_orders_count || 0} comanda(s)`;
+      document.getElementById("settleModalTotal").innerText = `S/ ${(t.open_total || 0).toFixed(2)}`;
+
+      const tbody = document.getElementById("settleModalItemsBody");
+      const items = t.consolidated_items || [];
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 16px; color:var(--text-muted);">No hay consumos pendientes de cobro.</td></tr>`;
+      } else {
+        tbody.innerHTML = items.map(it => {
+          let stateStr = `<span style="color:var(--green-status); font-weight:700;">Servido</span>`;
+          if (it.qty_pending > 0 && it.qty_delivered > 0) {
+            stateStr = `<span style="color:var(--primary); font-weight:700;">${it.qty_delivered} serv. / ${it.qty_pending} coc.</span>`;
+          } else if (it.qty_pending > 0) {
+            stateStr = `<span style="color:var(--red-order); font-weight:700;">En cocina (${it.qty_pending})</span>`;
+          }
+
+          return `
+            <tr>
+              <td><strong style="color:var(--primary); font-size:0.85rem;">${it.qty}x</strong></td>
+              <td>
+                <div style="font-weight:700; color:var(--text-main);">${it.name}</div>
+                ${it.option ? `<div style="font-size:0.7rem; color:var(--text-muted);">${it.option}</div>` : ''}
+              </td>
+              <td style="text-align: center; font-size:0.72rem;">${stateStr}</td>
+              <td style="text-align: right; font-weight:800; font-family:var(--font-heading);">S/ ${(it.subtotal || 0).toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById("tableSettleModal").classList.add("active");
+    }
+
+    function closeTableSettleModal() {
+      document.getElementById("tableSettleModal").classList.remove("active");
+    }
+
+    let currentReceiptData = null;
+    let currentReceiptExternalPdf = '';
+
+    async function confirmSettleTable() {
+      if (!currentSettlingTableId) return;
+      const confirmBtn = document.getElementById('btnConfirmSettleHold');
+      const origHtml = confirmBtn ? confirmBtn.innerHTML : '';
+      const emitChk = document.getElementById('settleEmitReceiptChk');
+      const payMethod = (document.getElementById('settlePayMethod')?.value || 'YAPE / PLIN');
+      const clientPhone = (document.getElementById('settleClientPhone')?.value || '').trim();
+
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = 'Liberando...';
+      }
+      try {
+        const res = await fetch(`/api/tables/${currentSettlingTableId}/settle`, {
+          method: 'POST',
+          cache: 'no-store'
+        });
+        if (!res.ok) {
+          alert('No se pudo confirmar el cobro de la mesa. Intenta nuevamente.');
+          return;
+        }
+        const settleData = await res.json();
+        closeTableSettleModal();
+        await Promise.all([loadTables(), loadOrders(), loadStats()]);
+        if (allDishesCache && allDishesCache.length > 0) renderDishesGrid();
+
+        if (emitChk && emitChk.checked && settleData.settled_total > 0) {
+          await createAndOpenReceipt({
+            table_id: settleData.table_id,
+            table_name: settleData.table_name,
+            items: settleData.consolidated_items || [],
+            total: settleData.settled_total,
+            payment_method: payMethod,
+            customer_phone: clientPhone
+          });
+        }
+      } finally {
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.innerHTML = origHtml;
+        }
+      }
+    }
+
+    async function emitReceiptFromCurrentOrder() {
+      const ord = (allOrdersCache || []).find(o => o.id === currentSelectedOrderId);
+      if (!ord) return;
+      closeOrderDetailModal();
+      await createAndOpenReceipt({
+        table_id: ord.table_id,
+        table_name: ord.table_name || 'Mesa',
+        items: (ord.items || []).map(it => ({
+          name: it.name,
+          option: it.option || '',
+          qty: it.qty || 1,
+          unit_price: it.price || 0,
+          subtotal: (it.price || 0) * (it.qty || 1)
+        })),
+        total: ord.total || 0,
+        payment_method: 'YAPE / PLIN'
+      });
+    }
+
+    async function createAndOpenReceipt(payload) {
+      const res = await fetch('/api/receipts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) return;
+      currentReceiptData = data.receipt;
+      currentReceiptExternalPdf = data.external_pdf_url || (window.location.origin + data.pdf_url);
+
+      document.getElementById('rcpInputName').value = currentReceiptData.customer_name || 'CLIENTES VARIOS';
+      document.getElementById('rcpInputDoc').value = currentReceiptData.customer_doc || '00000000';
+      document.getElementById('rcpInputPay').value = currentReceiptData.payment_method || 'YAPE / PLIN';
+      document.getElementById('rcpInputPhone').value = currentReceiptData.customer_phone || '';
+
+      renderReceiptModal();
+      document.getElementById('receiptModal').classList.add('active');
+    }
+
+    function syncReceiptPreviewMeta() {
+      if (!currentReceiptData) return;
+      const custName = (document.getElementById('rcpInputName').value || 'CLIENTES VARIOS').toUpperCase();
+      const custDoc = document.getElementById('rcpInputDoc').value || '00000000';
+      const payMethod = document.getElementById('rcpInputPay').value || 'YAPE / PLIN';
+      const custPhone = (document.getElementById('rcpInputPhone').value || '').trim();
+      currentReceiptData.customer_name = custName;
+      currentReceiptData.customer_doc = custDoc;
+      currentReceiptData.payment_method = payMethod;
+      currentReceiptData.customer_phone = custPhone;
+      document.getElementById('rcpCustomer').innerText = custName;
+      document.getElementById('rcpDoc').innerText = custDoc;
+      document.getElementById('rcpPayMethod').innerText = payMethod;
+    }
+
+    async function persistReceiptMetaUpdates() {
+      if (!currentReceiptData) return;
+      syncReceiptPreviewMeta();
+      try {
+        await fetch(`/api/receipts/${currentReceiptData.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_name: currentReceiptData.customer_name,
+            customer_doc: currentReceiptData.customer_doc,
+            customer_phone: currentReceiptData.customer_phone,
+            payment_method: currentReceiptData.payment_method
+          })
+        });
+      } catch (err) {
+        console.warn('No se pudo actualizar metadatos del ticket:', err);
+      }
+    }
+
+    function renderReceiptModal() {
+      const r = currentReceiptData;
+      if (!r) return;
+      document.getElementById('rcpNumber').innerText = r.number;
+      document.getElementById('rcpDate').innerText = r.issued_at;
+      document.getElementById('rcpMode').innerText = (r.table_name || 'SALON').toUpperCase();
+      document.getElementById('rcpSubtotal').innerText = `S/ ${(r.op_gravada || 0).toFixed(2)}`;
+      document.getElementById('rcpIgv').innerText = `S/ ${(r.igv || 0).toFixed(2)}`;
+      document.getElementById('rcpTotal').innerText = `S/ ${(r.total || 0).toFixed(2)}`;
+      document.getElementById('rcpOpNum').innerText = r.op_number || '#OP-000000';
+      document.getElementById('rcpHash').innerText = `REF: ${r.hash || ''}`;
+      syncReceiptPreviewMeta();
+
+      document.getElementById('rcpItemsBody').innerHTML = (r.items || []).map(it => {
+        const up = it.unit_price !== undefined ? it.unit_price : (it.price || 0);
+        const sub = it.subtotal !== undefined ? it.subtotal : (up * (it.qty || 1));
+        return `
+          <tr>
+            <td>${(it.qty || 1).toFixed(2)}</td>
+            <td>
+              <strong>${it.name}</strong>
+              ${it.option ? `<div style="font-size:0.62rem; color:#4B5563;">- ${it.option}</div>` : ''}
+            </td>
+            <td style="text-align:right;">${Number(up).toFixed(2)}</td>
+            <td style="text-align:right;"><strong>${Number(sub).toFixed(2)}</strong></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.remove('active');
+    }
+
+    function triggerPdfDownload(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function buildClientReceiptPdf(r, filename) {
+      const { jsPDF } = window.jspdf;
+      const items = r.items || [];
+      const extraLines = items.reduce((acc, it) => acc + (it.option ? 2 : 1), 0);
+      const pageH = Math.max(150, 112 + extraLines * 6);
+      const doc = new jsPDF({ unit: 'mm', format: [80, pageH] });
+      let y = 10;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('ESPADAZO MARINO', 40, y, { align: 'center' });
+      y += 4.5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.text('Barra Marina Artesanal - Lima, Perú', 40, y, { align: 'center' });
+      y += 4;
+      doc.line(5, y, 75, y);
+      y += 4.5;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.text('PRE-CUENTA / TICKET DE CONTROL INTERNO', 40, y, { align: 'center' });
+      y += 4.2;
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(9);
+      doc.text(String(r.number || r.id || ''), 40, y, { align: 'center' });
+      y += 3.5;
+      doc.line(5, y, 75, y);
+      y += 4.5;
+
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(7.2);
+      const meta = [
+        ['FECHA:', String(r.issued_at || '')],
+        ['CLIENTE:', String(r.customer_name || 'CLIENTES VARIOS').slice(0, 24)],
+        ['DOC REF:', String(r.customer_doc || '00000000').slice(0, 18)],
+        ['CONSUMO:', String(r.table_name || 'SALON').toUpperCase().slice(0, 22)]
+      ];
+      meta.forEach(([k, v]) => {
+        doc.text(k, 5, y);
+        doc.text(v, 75, y, { align: 'right' });
+        y += 4;
+      });
+      doc.line(5, y, 75, y);
+      y += 4;
+
+      doc.setFont('courier', 'bold');
+      doc.text('CANT  DESCRIPCIÓN', 5, y);
+      doc.text('TOTAL', 75, y, { align: 'right' });
+      y += 3.5;
+      doc.setFont('courier', 'normal');
+
+      items.forEach(it => {
+        const qty = Number(it.qty || 1);
+        const up = Number(it.unit_price !== undefined ? it.unit_price : (it.price || 0));
+        const sub = Number(it.subtotal !== undefined ? it.subtotal : up * qty);
+        const label = `${qty}x ${String(it.name || 'Platillo').slice(0, 24)}`;
+        doc.text(label, 5, y);
+        doc.text(`S/ ${sub.toFixed(2)}`, 75, y, { align: 'right' });
+        y += 4;
+        if (it.option) {
+          doc.setFontSize(6.5);
+          doc.text(`   - ${String(it.option).slice(0, 28)}`, 5, y);
+          doc.setFontSize(7.2);
+          y += 3.5;
+        }
+      });
+
+      y += 1;
+      doc.line(5, y, 75, y);
+      y += 4.5;
+      doc.text('BASE REF. (sin IGV):', 5, y);
+      doc.text(`S/ ${Number(r.op_gravada || 0).toFixed(2)}`, 75, y, { align: 'right' });
+      y += 4;
+      doc.text('IGV REF. (18% incl.):', 5, y);
+      doc.text(`S/ ${Number(r.igv || 0).toFixed(2)}`, 75, y, { align: 'right' });
+      y += 4.5;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('TOTAL CONSUMO:', 5, y);
+      doc.text(`S/ ${Number(r.total || 0).toFixed(2)}`, 75, y, { align: 'right' });
+      y += 5;
+
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(7);
+      doc.text(`MEDIO PAGO: ${String(r.payment_method || 'YAPE / PLIN')}`, 5, y);
+      y += 4;
+      doc.text(`REF. INTERNA: ${String(r.op_number || '')} (${String(r.hash || '')})`, 5, y);
+      y += 5;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.text('DOCUMENTO SIN VALOR TRIBUTARIO', 40, y, { align: 'center' });
+      y += 3.5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.text('Solicite su Boleta/Factura oficial en caja (SUNAT SOL / App Emprender)', 40, y, { align: 'center' });
+      y += 4.5;
+      doc.text('¡Gracias por visitar Espadazo Marino!', 40, y, { align: 'center' });
+
+      doc.save(filename);
+    }
+
+    async function downloadCurrentReceiptPdf() {
+      if (!currentReceiptData) return;
+      await persistReceiptMetaUpdates();
+      const fname = `Ticket_${(currentReceiptData.number || 'T001').replace(/\s+/g, '')}.pdf`;
+      if (window.jspdf && window.jspdf.jsPDF) {
+        buildClientReceiptPdf(currentReceiptData, fname);
+        return;
+      }
+      triggerPdfDownload(`/api/receipts/${currentReceiptData.id}/pdf`, fname);
+    }
+
+    function printCurrentReceiptSlip() {
+      if (!currentReceiptData) return;
+      syncReceiptPreviewMeta();
+      document.body.classList.add('printing-receipt');
+      window.print();
+      setTimeout(() => document.body.classList.remove('printing-receipt'), 400);
+    }
+
+    async function sendReceiptViaWhatsApp() {
+      if (!currentReceiptData) return;
+      let rawPhone = (document.getElementById('rcpInputPhone').value || '').replace(/\D/g, '');
+      if (!rawPhone || rawPhone.length < 7) {
+        alert('Ingresa el número de WhatsApp del cliente (mínimo 9 dígitos).');
+        document.getElementById('rcpInputPhone').focus();
+        return;
+      }
+      if (rawPhone.length === 9 && rawPhone.startsWith('9')) {
+        rawPhone = '51' + rawPhone;
+      }
+      await downloadCurrentReceiptPdf();
+
+      const r = currentReceiptData;
+      const lines = (r.items || []).map(it => {
+        const sub = it.subtotal !== undefined ? it.subtotal : ((it.unit_price || it.price || 0) * (it.qty || 1));
+        return `• ${it.qty || 1}x ${it.name} -> S/ ${Number(sub).toFixed(2)}`;
+      }).join('\n');
+
+      const msg = [
+        `*PRE-CUENTA / TICKET DE CONTROL — ESPADAZO MARINO*`,
+        `Ticket: *${r.number}*`,
+        `Fecha: ${r.issued_at}`,
+        `Mesa / Consumo: ${r.table_name}`,
+        ``,
+        lines,
+        ``,
+        `Base ref.: S/ ${(r.op_gravada || 0).toFixed(2)}`,
+        `IGV ref. (18% incl.): S/ ${(r.igv || 0).toFixed(2)}`,
+        `*TOTAL CONSUMO: S/ ${(r.total || 0).toFixed(2)}*`,
+        `_(Documento interno sin valor tributario)_`,
+        ``,
+        `Descargar Ticket PDF: ${currentReceiptExternalPdf}`,
+        `¡Gracias por su visita!`
+      ].join('\n');
+
+      const waUrl = `https://wa.me/${rawPhone}?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
+    }
+
+    async function loadTables() {
+      try {
+        const res = await fetch('/api/tables', { cache: 'no-store' });
+        const tables = await res.json();
+        allTablesCache = tables;
+        const container = document.getElementById("tablesContainer");
+        
+        container.innerHTML = tables.map(t => {
+          const isOccupied = !!t.is_occupied;
+          const activeKitchen = t.active_orders || 0;
+          const items = t.consolidated_items || [];
+
+          let statusLeftHtml = '0 pedidos';
+          if (isOccupied) {
+            if (activeKitchen > 0) {
+              statusLeftHtml = `<span class="dot-live red"></span>${activeKitchen} coc. • S/${(t.open_total || 0).toFixed(0)}`;
+            } else {
+              statusLeftHtml = `<span class="dot-live green"></span>Servido • S/${(t.open_total || 0).toFixed(0)}`;
+            }
+          }
+
+          return `
+            <div class="table-card">
+              <!-- MESA A LA IZQUIERDA Y SILLAS/PERSONAS A LA DERECHA -->
+              <div class="table-row-top">
+                <span class="table-name-txt" title="${t.name}">${t.name}</span>
+                <span class="table-cap-txt">${t.capacity || 4} sillas</span>
+              </div>
+              
+              <!-- ABAJO EL NUMERO DE PEDIDOS / TOTAL Y SU ESTADO -->
+              <div class="table-row-bottom">
+                <span class="table-orders-count ${activeKitchen > 0 ? 'has-orders' : ''}">
+                  ${statusLeftHtml}
+                </span>
+                <span class="table-state-badge ${isOccupied ? 'state-ocupada' : 'state-libre'}">
+                  ${isOccupied ? 'Ocupada' : 'Libre'}
+                </span>
+              </div>
+
+              <!-- DETALLE CONSOLIDADO Y AGRUPADO (VISIBLE AL EXPANDIR) -->
+              <div class="table-expanded-order-details">
+                <div class="exp-title">
+                  <span>Cuenta Consolidada:</span>
+                  <span>${t.unpaid_orders_count || 0} rondas</span>
+                </div>
+                ${items.length > 0 ? `
+                  <ul class="exp-items-list">
+                    ${items.map(it => `
+                      <li style="display:flex; justify-content:space-between;">
+                        <span style="overflow:hidden; text-overflow:ellipsis;">• ${it.qty}x ${it.name}</span>
+                        <span style="color:var(--text-muted); margin-left:4px;">S/${it.subtotal.toFixed(0)}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                  <div class="exp-total-line">
+                    <span>Total cuenta:</span>
+                    <span>S/ ${(t.open_total || 0).toFixed(2)}</span>
+                  </div>
+                ` : `
+                  <div class="exp-empty-msg">Mesa libre • Sin consumos abiertos</div>
+                `}
+              </div>
+
+              <!-- ACCIONES DE MESA -->
+              <div class="table-actions">
+                <button class="btn-table-qr" onclick="viewTableQr('${t.id}', '${t.name}')" title="Ver e Imprimir Código QR">
+                  <svg class="icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2zM7 7h4v4H7zm6 0h4v4h-4zm-6 6h4v4H7zm6 6h4v-4h-4z"/></svg>
+                  QR
+                </button>
+                <a href="/?mesa=${encodeURIComponent(t.id)}" target="_blank" class="btn-table-qr" style="text-decoration:none;" title="Abrir vista de la carta vinculada a ${t.name}">
+                  Carta
+                </a>
+                ${isOccupied ? `
+                  <button class="btn-table-settle" onclick="openTableSettleModal('${t.id}')" title="Cobrar cuenta y liberar mesa">
+                    <svg class="icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+                    Cobrar
+                  </button>
+                ` : ''}
+                <button class="btn-table-del" onclick="deleteTable('${t.id}')" title="Eliminar mesa">
+                  <svg class="icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        console.error("Error loading tables:", e);
+      }
+    }
+
+    async function loadDishes() {
+      try {
+        const res = await fetch('/api/dishes');
+        allDishesCache = await res.json();
+        renderDishesGrid();
+      } catch (e) {
+        console.error("Error loading dishes:", e);
+      }
+    }
+
+    function renderDishesGrid() {
+      const container = document.getElementById("dishesGridContainer");
+      let list = allDishesCache;
+
+      if (activeCategoryFilter !== 'all') {
+        list = list.filter(d => { const dc = (d.category || '').toLowerCase(); const af = activeCategoryFilter.toLowerCase(); return (af === 'combos' || af === 'duos') ? (dc === 'combos' || dc === 'duos') : dc === af; });
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.74rem;">
+          No hay platillos registrados en esta categoría.
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(d => {
+        const catLabel = CATEGORY_NAMES[d.category] || d.category || 'Carta';
+        const stats = getDishDemandStats(d.id, d.name, currentTimeFilter);
+
+        // Tags de mesas pidiendo en este momento
+        let liveTablesHtml = '';
+        if (stats.activeTables.length > 0) {
+          liveTablesHtml = stats.activeTables.map(tableName => `
+            <span class="tag-table-live">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              ${tableName}
+            </span>
+          `).join('');
+        } else {
+          liveTablesHtml = `<span class="tag-table-none">Sin pedidos en curso</span>`;
+        }
+
+        return `
+          <div class="dish-card-compact">
+            <div class="dish-card-top">
+              <div class="dish-thumb-wrap-admin">
+                <img src="/${(d.images && d.images[0]) || d.img || 'assets/duo_espadazo.webp'}" alt="${d.name}" class="dish-thumb" onerror="this.src='/assets/logo.svg'">
+                ${(d.images && d.images.length > 1) ? `<span class="dish-count-pill">${d.images.length}/5</span>` : ''}
+              </div>
+              <div class="dish-main-info">
+                <span class="dish-category-label">${catLabel}</span>
+                <span class="dish-title" title="${d.name}">${d.name}</span>
+                <span class="dish-desc-preview" title="${d.desc || ''}">${d.desc || 'Receta marina tradicional'}</span>
+              </div>
+            </div>
+
+            <!-- ANALYTICS EXPANDIDOS: TAGS DE MESAS + BARRA PORCENTUAL + MONTAÑA SPARKLINE (IMAGENES 4 Y 5) -->
+            <div class="dish-expanded-analytics">
+              <div class="dish-live-tables-row">
+                <span style="font-weight:700; color:var(--text-muted); font-size:0.63rem;">Mesas pidiendo:</span>
+                ${liveTablesHtml}
+              </div>
+              
+              <div class="dish-demand-row">
+                <div class="dish-demand-left">
+                  <div style="display:flex; justify-content:space-between; font-size:0.62rem;">
+                    <span>Demanda ${currentTimeFilter}:</span>
+                    <span class="dish-demand-count">${stats.count} pedidos (${stats.percent}%)</span>
+                  </div>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width: ${stats.percent}%;"></div>
+                  </div>
+                </div>
+                <!-- GRAFICO MONTAÑA SPARKLINE -->
+                <div class="sparkline-box" title="Curva de demanda en ${currentTimeFilter}">
+                  <svg class="sparkline-svg" viewBox="0 0 65 20">
+                    <path d="${stats.sparklineD}" fill="none" stroke="${stats.strokeColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="dish-card-bottom">
+              <span class="dish-price-text">S/ ${(d.price || 0).toFixed(2)}</span>
+              <div class="dish-card-actions">
+                <button class="dish-toggle-btn ${d.published ? '' : 'paused'}" onclick="togglePublishDish('${d.id}', ${d.published})">
+                  ${d.published ? 'Publicado' : 'Pausado'}
+                </button>
+                <button class="btn-edit-pencil" onclick="editDish('${d.id}')" title="Editar platillo">
+                  <svg class="icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterDishes(cat, btn) {
+      activeCategoryFilter = cat;
+      document.querySelectorAll(".btn-cat-pill").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      renderDishesGrid();
+    }
+
+    async function togglePublishDish(dishId, currentStatus) {
+      await fetch(`/api/dishes/${dishId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ published: !currentStatus })
+      });
+      loadDishes();
+    }
+
+    // GESTION DE PLATILLOS MODAL (SOLO SUBIDA DIRECTA HASTA 5 FOTOS OPTIMIZADAS)
+    const MAX_DISH_PHOTOS = 5;
+    let currentDishPhotos = []; // [{ path, kb }]
+    let isUploadingPhotos = false;
+
+    function triggerDishFilePicker() {
+      if (isUploadingPhotos) return;
+      if (currentDishPhotos.length >= MAX_DISH_PHOTOS) {
+        alert("Ya alcanzaste el límite máximo de 5 fotografías para este platillo.");
+        return;
+      }
+      const inp = document.getElementById("dishFileInput");
+      inp.value = "";
+      inp.click();
+    }
+
+    function renderDishPhotoSlots() {
+      const grid = document.getElementById("dishSlotsGrid");
+      const counter = document.getElementById("dishPhotoCounter");
+      const dropzone = document.getElementById("dishDropzone");
+      const statusTxt = document.getElementById("dishUploadStatusText");
+
+      const count = currentDishPhotos.length;
+      counter.innerText = `${count} / ${MAX_DISH_PHOTOS} fotos`;
+      counter.classList.toggle("full", count === MAX_DISH_PHOTOS);
+
+      if (count >= MAX_DISH_PHOTOS) {
+        dropzone.classList.add("disabled");
+        statusTxt.innerText = "Límite alcanzado: 5 / 5 fotografías cargadas";
+      } else {
+        dropzone.classList.remove("disabled");
+        statusTxt.innerText = isUploadingPhotos
+          ? "Optimizando y comprimiendo imágenes a WebP..."
+          : `Haz clic o arrastra fotos aquí (espacio para ${MAX_DISH_PHOTOS - count} más)`;
+      }
+
+      let slotsHtml = "";
+      for (let i = 0; i < MAX_DISH_PHOTOS; i++) {
+        const item = currentDishPhotos[i];
+        if (item) {
+          slotsHtml += `
+            <div class="dish-photo-slot">
+              <img src="/${item.path}" alt="Foto ${i + 1}" onerror="this.src='/assets/logo.svg'">
+              ${i === 0 ? `<span class="slot-badge-main">Principal</span>` : `<button type="button" class="slot-btn-star" onclick="promoteDishPhoto(${i})" title="Hacer foto principal">★</button>`}
+              ${item.kb ? `<span class="slot-badge-kb">${item.kb}KB</span>` : ''}
+              <button type="button" class="slot-btn-del" onclick="removeDishPhoto(${i})" title="Quitar foto">&times;</button>
+            </div>
+          `;
+        } else {
+          slotsHtml += `
+            <div class="dish-photo-slot empty" onclick="triggerDishFilePicker()" title="Subir fotografía">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              <span>Foto ${i + 1}</span>
+            </div>
+          `;
+        }
+      }
+      grid.innerHTML = slotsHtml;
+    }
+
+    function removeDishPhoto(idx) {
+      currentDishPhotos.splice(idx, 1);
+      renderDishPhotoSlots();
+    }
+
+    function promoteDishPhoto(idx) {
+      if (idx <= 0 || idx >= currentDishPhotos.length) return;
+      const [chosen] = currentDishPhotos.splice(idx, 1);
+      currentDishPhotos.unshift(chosen);
+      renderDishPhotoSlots();
+    }
+
+    async function handleDishFilesSelect(fileList) {
+      if (!fileList || fileList.length === 0) return;
+      const remaining = MAX_DISH_PHOTOS - currentDishPhotos.length;
+      if (remaining <= 0) {
+        alert("Solo se permiten máximo 5 fotografías por platillo.");
+        return;
+      }
+
+      const filesArr = Array.from(fileList).filter(f => f.type.startsWith("image/"));
+      if (filesArr.length === 0) {
+        alert("Selecciona archivos de imagen válidos (JPG, PNG, WEBP).");
+        return;
+      }
+
+      if (filesArr.length > remaining) {
+        alert(`Solo puedes agregar ${remaining} fotografía(s) más (límite máximo: 5 por platillo). Se subirán las primeras ${remaining}.`);
+      }
+
+      const toUpload = filesArr.slice(0, remaining);
+      const fd = new FormData();
+      toUpload.forEach(f => fd.append("images", f));
+
+      isUploadingPhotos = true;
+      renderDishPhotoSlots();
+      try {
+        const res = await fetch("/api/upload-image", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.error || "No se pudieron optimizar las imágenes.");
+          return;
+        }
+        (data.uploaded || []).forEach(up => {
+          if (currentDishPhotos.length < MAX_DISH_PHOTOS) {
+            currentDishPhotos.push({ path: up.path, kb: up.optimized_kb });
+          }
+        });
+      } catch (e) {
+        console.error("Upload error:", e);
+        alert("Error al subir y optimizar fotografías.");
+      } finally {
+        isUploadingPhotos = false;
+        renderDishPhotoSlots();
+      }
+    }
+
+    async function editDish(dishId) {
+      const d = allDishesCache.find(x => x.id === dishId);
+      if (!d) return;
+
+      document.getElementById("dishModalTitle").innerText = "Editar Platillo";
+      document.getElementById("dishIdInput").value = d.id;
+      document.getElementById("dishNameInput").value = d.name;
+      document.getElementById("dishCategoryInput").value = d.category === 'duos' ? 'combos' : (d.category || 'ceviches');
+      document.getElementById("dishPriceInput").value = d.price;
+      document.getElementById("dishDescInput").value = d.desc || '';
+      document.getElementById("dishBadgeInput").value = d.badge || '';
+
+      const existingImgs = Array.isArray(d.images) && d.images.length > 0 ? d.images : (d.img ? [d.img] : []);
+      currentDishPhotos = existingImgs.slice(0, MAX_DISH_PHOTOS).map(p => ({ path: p, kb: null }));
+      renderDishPhotoSlots();
+
+      document.getElementById("dishModal").classList.add("active");
+    }
+
+    function openDishModal() {
+      document.getElementById("dishModalTitle").innerText = "Nuevo Platillo de la Carta";
+      document.getElementById("dishIdInput").value = "";
+      document.getElementById("dishNameInput").value = "";
+      document.getElementById("dishPriceInput").value = "";
+      document.getElementById("dishDescInput").value = "";
+      document.getElementById("dishBadgeInput").value = "RECOMENDADO";
+      currentDishPhotos = [];
+      renderDishPhotoSlots();
+      document.getElementById("dishModal").classList.add("active");
+    }
+
+    function closeDishModal() {
+      document.getElementById("dishModal").classList.remove("active");
+    }
+
+    async function saveDish() {
+      if (isUploadingPhotos) {
+        alert("Espera un instante a que terminen de optimizarse las fotografías.");
+        return;
+      }
+      const id = document.getElementById("dishIdInput").value;
+      const name = document.getElementById("dishNameInput").value.trim();
+      const category = document.getElementById("dishCategoryInput").value;
+      const price = parseFloat(document.getElementById("dishPriceInput").value) || 0;
+      const desc = document.getElementById("dishDescInput").value.trim();
+      const badge = document.getElementById("dishBadgeInput").value.trim();
+
+      if (!name || price <= 0) {
+        alert("Por favor ingresa un nombre válido y precio mayor a 0.");
+        return;
+      }
+      if (currentDishPhotos.length === 0) {
+        alert("Sube al menos 1 fotografía optimizada para el platillo (máximo 5).");
+        return;
+      }
+
+      const imgsPayload = currentDishPhotos.slice(0, MAX_DISH_PHOTOS).map(x => x.path);
+      const res = await fetch('/api/dishes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          name,
+          category,
+          price,
+          img: imgsPayload[0],
+          images: imgsPayload,
+          desc,
+          badge,
+          published: true
+        })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || "No se pudo guardar el platillo.");
+        return;
+      }
+
+      closeDishModal();
+      loadDishes();
+    }
+
+    // GESTION DE MESAS MODAL
+    function openTableModal() {
+      document.getElementById("tableNameInput").value = "";
+      document.getElementById("tableCapInput").value = "4";
+      document.getElementById("tableModal").classList.add("active");
+    }
+    function closeTableModal() {
+      document.getElementById("tableModal").classList.remove("active");
+    }
+    async function saveTable() {
+      const name = document.getElementById("tableNameInput").value.trim();
+      const capacity = parseInt(document.getElementById("tableCapInput").value) || 4;
+      if (!name) return;
+
+      await fetch('/api/tables', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, capacity })
+      });
+      closeTableModal();
+      loadTables();
+      loadStats();
+    }
+    async function deleteTable(tableId) {
+      if (!confirm("¿Eliminar esta mesa y su código QR?")) return;
+      await fetch(`/api/tables/${tableId}`, { method: 'DELETE' });
+      loadTables();
+      loadStats();
+    }
+
+    // VISOR DE QR DE MESA
+    function viewTableQr(tableId, tableName) {
+      document.getElementById("qrModalTitle").innerText = `Tarjeta QR — ${tableName}`;
+      const qrUrl = `/qr_table/${tableId}?t=${Date.now()}`;
+      document.getElementById("qrModalImage").src = qrUrl;
+      document.getElementById("qrDownloadBtn").href = qrUrl;
+      document.getElementById("qrDownloadBtn").download = `QR_${tableName.replace(/\s+/g, '_')}.png`;
+      const openMenuBtn = document.getElementById("qrOpenMenuBtn");
+      if (openMenuBtn) {
+        openMenuBtn.href = `/?mesa=${encodeURIComponent(tableId)}`;
+        openMenuBtn.innerHTML = `<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg> Ver Carta (${tableName})`;
+      }
+      document.getElementById("qrModal").classList.add("active");
+    }
+    function closeQrModal() {
+      document.getElementById("qrModal").classList.remove("active");
+    }
+
+    // AJUSTES & CONEXION A INTERNET + SUPABASE HIBRIDO
+    async function openSettingsModal() {
+      const res = await fetch('/api/settings', { cache: 'no-store' });
+      const data = await res.json();
+      document.getElementById("settingsPublicUrl").value = data.public_url || "";
+      document.getElementById("settingsDetectedIp").value = `http://${data.detected_local_ip || '192.168.0.100'}:8080`;
+      document.getElementById("settingsPinInput").value = "";
+      document.getElementById("settingsPhoneInput").value = data.phone || "51987654321";
+
+      document.getElementById("settingsSupabaseUrl").value = data.supabase_url || "";
+      const keyInp = document.getElementById("settingsSupabaseKey");
+      keyInp.value = "";
+      keyInp.placeholder = data.supabase_key_configured
+        ? "•••••••• Configurada (dejar vacío para conservarla)"
+        : "eyJhbGci... o sb_secret_...";
+      const pgInp = document.getElementById("settingsPostgresUrl");
+      pgInp.value = "";
+      pgInp.placeholder = data.postgres_url_configured
+        ? "•••••••• URI configurada (dejar vacío para conservarla)"
+        : "postgresql://postgres:[PASSWORD]@db.xxxx.supabase.co:5432/postgres";
+
+      const pill = document.getElementById("settingsCloudPill");
+      if (pill) {
+        pill.textContent = data.cloud_enabled ? "● Conectada" : "Opcional • Respaldo 24/7";
+        pill.className = data.cloud_enabled ? "box-card-badge green" : "box-card-badge";
+      }
+      const msgBox = document.getElementById("cloudSyncResultMsg");
+      if (msgBox) msgBox.style.display = "none";
+
+      document.getElementById("settingsModal").classList.add("active");
+    }
+    function closeSettingsModal() {
+      document.getElementById("settingsModal").classList.remove("active");
+    }
+    async function saveSettings() {
+      const public_url = document.getElementById("settingsPublicUrl").value.trim();
+      const admin_pin = document.getElementById("settingsPinInput").value.trim();
+      const phone = document.getElementById("settingsPhoneInput").value.trim();
+      const supabase_url = document.getElementById("settingsSupabaseUrl").value.trim();
+      const supabase_key = document.getElementById("settingsSupabaseKey").value.trim();
+      const postgres_url = document.getElementById("settingsPostgresUrl").value.trim();
+      const payload = { public_url, phone, supabase_url };
+      if (admin_pin) payload.admin_pin = admin_pin;
+      if (supabase_key) payload.supabase_key = supabase_key;
+      if (postgres_url) payload.postgres_url = postgres_url;
+
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      closeSettingsModal();
+      loadStats();
+      alert("Ajustes guardados correctamente. Si ingresaste un dominio de Internet, los códigos QR se han actualizado con esa URL.");
+    }
+
+    async function syncWithSupabase() {
+      const btn = document.getElementById("btnSyncSupabase");
+      const msgBox = document.getElementById("cloudSyncResultMsg");
+      const origText = btn ? btn.innerHTML : "";
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = "⏳ Conectando &amp; Sincronizando...";
+      }
+      if (msgBox) {
+        msgBox.style.display = "none";
+      }
+      try {
+        const payload = {
+          supabase_url: document.getElementById("settingsSupabaseUrl").value.trim(),
+          supabase_key: document.getElementById("settingsSupabaseKey").value.trim(),
+          postgres_url: document.getElementById("settingsPostgresUrl").value.trim()
+        };
+        const res = await fetch("/api/cloud/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (msgBox) {
+          msgBox.style.display = "block";
+          if (res.ok && data.success) {
+            const st = data.stats || {};
+            msgBox.style.background = "rgba(16, 185, 129, 0.12)";
+            msgBox.style.border = "1px solid rgba(16, 185, 129, 0.35)";
+            msgBox.style.color = "#10B981";
+            msgBox.innerHTML = `<strong>✔ Sincronización exitosa:</strong> ${st.dishes || 0} platillos, ${st.tables || 0} mesas, ${st.orders || 0} órdenes y ${st.receipts || 0} tickets respaldados en la nube.`;
+            fetchDashboardData();
+          } else {
+            msgBox.style.background = "rgba(225, 29, 72, 0.12)";
+            msgBox.style.border = "1px solid rgba(225, 29, 72, 0.35)";
+            msgBox.style.color = "#FB7185";
+            msgBox.innerHTML = `<strong>⚠ Atención:</strong> ${data.error || "No se pudo conectar con Supabase."}`;
+          }
+        }
+      } catch (err) {
+        if (msgBox) {
+          msgBox.style.display = "block";
+          msgBox.style.background = "rgba(225, 29, 72, 0.12)";
+          msgBox.style.border = "1px solid rgba(225, 29, 72, 0.35)";
+          msgBox.style.color = "#FB7185";
+          msgBox.textContent = "Error de red: " + err.message;
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origText;
+        }
+      }
+    }
+
+    async function copySupabaseSql() {
+      const msgBox = document.getElementById("cloudSyncResultMsg");
+      try {
+        const res = await fetch("/api/cloud/status", { cache: "no-store" });
+        const data = await res.json();
+        const sql = data.schema_sql || "";
+        if (!sql) {
+          alert("No se encontró el archivo supabase_schema.sql en el servidor.");
+          return;
+        }
+        await navigator.clipboard.writeText(sql);
+        if (msgBox) {
+          msgBox.style.display = "block";
+          msgBox.style.background = "rgba(56, 189, 248, 0.12)";
+          msgBox.style.border = "1px solid rgba(56, 189, 248, 0.35)";
+          msgBox.style.color = "#38BDF8";
+          msgBox.innerHTML = "<strong>📋 SQL copiado al portapapeles.</strong> Pégalo y ejecútalo en el <em>SQL Editor</em> de tu proyecto Supabase.";
+        } else {
+          alert("SQL de tablas copiado al portapapeles.");
+        }
+      } catch (err) {
+        alert("No se pudo copiar automáticamente el SQL: " + err.message);
+      }
+    }
+
+    // GESTION & MIGRACION DE CAJA
+    function handleBoxFileSelected(input) {
+      const lbl = document.getElementById("boxFileLabelText");
+      if (!lbl) return;
+      if (input.files && input.files.length > 0) {
+        lbl.textContent = "📄 " + input.files[0].name;
+        lbl.parentElement.classList.add("has-file");
+      } else {
+        lbl.textContent = "Seleccionar archivo .caja o .zip...";
+        lbl.parentElement.classList.remove("has-file");
+      }
+    }
+    function openBoxModal() {
+      document.getElementById("boxModal").classList.add("active");
+    }
+    function closeBoxModal() {
+      document.getElementById("boxModal").classList.remove("active");
+    }
+    function exportBoxPackage() {
+      window.location.href = "/api/box/export";
+    }
+    async function importBoxPackage() {
+      const fileInput = document.getElementById("boxImportFileInput");
+      if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+        alert("Por favor selecciona un archivo .caja o .zip para importar.");
+        return;
+      }
+      const file = fileInput.files[0];
+      if (!confirm(`¿Estás seguro de restaurar la caja desde "${file.name}"? Se generará un respaldo preventivo de los datos actuales.`)) {
+        return;
+      }
+      const formData = new FormData();
+      formData.append("package", file);
+      try {
+        const res = await fetch("/api/box/import", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert("Error al importar: " + (data.error || "Archivo inválido"));
+          return;
+        }
+        alert("¡Caja restaurada con éxito! La página se actualizará ahora.");
+        closeBoxModal();
+        window.location.reload();
+      } catch (err) {
+        alert("Error de red al importar caja: " + err.message);
+      }
+    }
+    async function startNewBox(mode) {
+      const isShift = (mode === 'new_shift');
+      const question = isShift
+        ? "¿Deseas iniciar un NUEVO TURNO / DÍA? Se archivará el estado actual en copias de seguridad, se limpiarán las órdenes y se liberarán todas las mesas, conservando la carta y ajustes."
+        : "¡ATENCIÓN! ¿Deseas iniciar una caja limpia en blanco? Se archivarán las ventas y mesas actuales.";
+      if (!confirm(question)) return;
+      try {
+        const res = await fetch("/api/box/new", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert("Error: " + (data.error || "No se pudo iniciar nueva caja"));
+          return;
+        }
+        alert(data.message || "Nueva caja iniciada correctamente.");
+        closeBoxModal();
+        window.location.reload();
+      } catch (err) {
+        alert("Error de red al reiniciar caja: " + err.message);
+      }
+    }
+
+    
+    // SOPORTE DE PARAMETRO URL ?expand=mod-1/2/3 o ?order=ORD-XXXX
+    (function checkUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const exp = params.get('expand');
+      if (exp) {
+        setTimeout(() => {
+          const modEl = document.getElementById(exp);
+          if (modEl) toggleExpandModule(exp);
+        }, 300);
+      }
+      const settleId = params.get('settle');
+      if (settleId) {
+        setTimeout(() => { openTableSettleModal(settleId); }, 850);
+      }
+      const ord = params.get('order');
+      if (ord) {
+        setTimeout(() => { openOrderDetailModal(ord); }, 800);
+      }
+      if (params.get('newdish') === '1') {
+        setTimeout(() => { openDishModal(); }, 600);
+      }
+      const editDishId = params.get('editdish');
+      if (editDishId) {
+        setTimeout(() => { editDish(editDishId); }, 800);
+      }
+      const rcpOrd = params.get('receipt');
+      if (rcpOrd) {
+        setTimeout(() => {
+          currentSelectedOrderId = rcpOrd;
+          emitReceiptFromCurrentOrder();
+        }, 900);
+      }
+    })();
+
+    function bindSettleHoldButton() {
+      const modalEl = document.getElementById('tableSettleModal');
+      if (!modalEl) return;
+      initHoldButtons(modalEl, async (btn, resetFn) => {
+        try {
+          await confirmSettleTable();
+        } finally {
+          if (resetFn) resetFn();
+        }
+      });
+    }
+    document.addEventListener('DOMContentLoaded', bindSettleHoldButton);
+    if (document.readyState !== 'loading') bindSettleHoldButton();
+
+    // Soporte opcional ?filter=all|finalizado|entregado|pedido
+    (function checkFilterParam() {
+      const f = new URLSearchParams(window.location.search).get('filter');
+      if (f) {
+        activeFilter = f;
+        document.querySelectorAll('.btn-filter-pill').forEach(p => {
+          p.classList.toggle('active', (p.getAttribute('onclick') || '').includes(`'${f}'`));
+        });
+      }
+    })();
+
+    // TEMA NOCHE / DIA
+    function initTheme() {
+      try {
+        const saved = localStorage.getItem('espadazo_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        applyTheme(saved);
+      } catch (e) {
+        applyTheme('light');
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try { localStorage.setItem('espadazo_theme', theme); } catch (e) {}
+      const isDark = theme === 'dark';
+
+      const moonIcons = document.querySelectorAll('.theme-icon-moon');
+      const sunIcons = document.querySelectorAll('.theme-icon-sun');
+      const textLabels = document.querySelectorAll('#themeStatusText, .theme-text');
+
+      moonIcons.forEach(el => el.style.display = isDark ? 'none' : 'inline-flex');
+      sunIcons.forEach(el => el.style.display = isDark ? 'inline-flex' : 'none');
+      textLabels.forEach(el => el.textContent = isDark ? 'Modo Día' : 'Modo Noche');
+
+      const adminLogo = document.getElementById('adminMainLogo');
+      if (adminLogo) {
+        adminLogo.src = isDark ? '/assets/logo_dark.svg' : '/assets/logo.svg';
+      }
+    }
+
+    // INICIALIZACION
+    initTheme();
+    loadStats();
+    loadOrders();
+    loadTables();
+    loadDishes();
+
+    // Polling inteligente: solo consulta cuando la pestana esta visible
+    setInterval(() => {
+      if (document.hidden) return;
+      loadStats();
+      loadOrders();
+    }, 3000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        loadStats();
+        loadOrders();
+      }
+    });
+  </script>
+
+  <!-- MODAL: RESUMEN DETALLADO DE COMANDA -->
+  <div class="modal-backdrop" id="orderDetailModal">
+    <div class="order-detail-card">
+      <div class="order-detail-header">
+        <div>
+          <h3 id="modalOrderTitle" style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800;">Comanda</h3>
+          <span id="modalOrderSub" style="font-size: 0.72rem; color: var(--text-muted);">Mesa 1 • ORD-0000</span>
+        </div>
+        <button class="modal-close" onclick="closeOrderDetailModal()">&times;</button>
+      </div>
+      <div class="order-detail-body">
+        <div id="modalOrderBadge" class="order-detail-badge pedido">● EN PREPARACIÓN</div>
+        
+        <div>
+          <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">Platillos Ordenados</h4>
+          <table class="order-detail-table">
+            <thead>
+              <tr>
+                <th>Cant.</th>
+                <th>Platillo / Opciones</th>
+                <th style="text-align: right;">Unit.</th>
+                <th style="text-align: right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="modalOrderItemsBody">
+              <!-- Render dinamico -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="modalOrderNotesBox" style="display:none; background: #FFFBEB; border: 1px dashed #FDE68A; color: #B45309; padding: 8px 12px; border-radius: 6px; font-size: 0.75rem;">
+          <strong>Nota especial:</strong> <span id="modalOrderNotesText"></span>
+        </div>
+
+        <div style="background: var(--surface-subtle); padding: 12px 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">MODALIDAD DE SERVICIO</div>
+            <strong id="modalOrderServiceMode" style="font-size: 0.85rem;">En Barra</strong>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.72rem; color: var(--text-muted);">TOTAL A COBRAR</div>
+            <strong id="modalOrderTotal" style="font-family: var(--font-heading); font-size: 1.3rem; color: var(--primary);">S/ 0.00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot" style="justify-content: space-between;">
+        <div style="display:flex; gap:6px;">
+          <button class="btn-action" onclick="printOrderComanda()">
+            <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+            Imprimir Ticket
+          </button>
+          <button class="btn-action" style="color:var(--accent-blue); border-color:rgba(43,122,155,0.3);" onclick="emitReceiptFromCurrentOrder()">
+            <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            Ticket PDF
+          </button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="modalOrderToggleBtn" class="btn-action primary" onclick="toggleModalOrderStatus()">
+            Marcar como Entregado
+          </button>
+          <button class="btn-action" onclick="closeOrderDetailModal()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: COBRAR CUENTA CONSOLIDADA Y LIBERAR MESA -->
+  <div class="modal-backdrop" id="tableSettleModal">
+    <div class="order-detail-card">
+      <div class="order-detail-header">
+        <div>
+          <h3 id="settleModalTitle" style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800;">Cuenta de Mesa</h3>
+          <span id="settleModalSub" style="font-size: 0.72rem; color: var(--text-muted);">Resumen consolidado de consumos</span>
+        </div>
+        <button class="modal-close" onclick="closeTableSettleModal()">&times;</button>
+      </div>
+      <div class="order-detail-body">
+        <table class="order-detail-table">
+          <thead>
+            <tr>
+              <th>Cant.</th>
+              <th>Platillo (Agrupado)</th>
+              <th style="text-align: center;">Estado</th>
+              <th style="text-align: right;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="settleModalItemsBody">
+            <!-- Render dinamico -->
+          </tbody>
+        </table>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--surface-subtle); border: 1px solid var(--border); padding: 10px 12px; border-radius: 8px;">
+          <div>
+            <label style="display:block; font-size:0.65rem; font-weight:700; color:var(--text-muted); margin-bottom:3px;">FORMA DE PAGO</label>
+            <select id="settlePayMethod" style="width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.75rem; font-weight:700; background:var(--surface); color:var(--text-main);">
+              <option value="YAPE / PLIN">Yape / Plin</option>
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="VISA / MASTERCARD">Visa / Mastercard</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:0.65rem; font-weight:700; color:var(--text-muted); margin-bottom:3px;">WHATSAPP CLIENTE (OPCIONAL)</label>
+            <input type="tel" id="settleClientPhone" placeholder="Ej: 987654321" style="width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.75rem; background:var(--surface); color:var(--text-main);">
+          </div>
+          <label style="grid-column: 1 / -1; display:flex; align-items:center; gap:6px; font-size:0.72rem; font-weight:700; color:var(--text-main); cursor:pointer;">
+            <input type="checkbox" id="settleEmitReceiptChk" checked style="accent-color: var(--primary);">
+            Emitir Ticket de Control / Pre-cuenta (PDF / WhatsApp) automáticamente al liberar
+          </label>
+        </div>
+
+        <div style="background: var(--surface-subtle); padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.7rem; color:var(--text-muted);">COMANDAS EN ESTA CUENTA</div>
+            <strong id="settleModalOrderCount" style="font-size: 0.88rem;">0 comandas</strong>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.7rem; color: var(--text-muted);">TOTAL ACUMULADO A COBRAR</div>
+            <strong id="settleModalTotal" style="font-family: var(--font-heading); font-size: 1.35rem; color: var(--primary);">S/ 0.00</strong>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot" style="justify-content: space-between;">
+        <button class="btn-action" onclick="window.print()">
+          <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+          Imprimir Pre-Cuenta
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-action" onclick="closeTableSettleModal()">Cancelar</button>
+          <button id="btnConfirmSettleHold" class="btn-action primary btn-hold-3s settle-hold-btn" data-hold-ms="3000" style="background: var(--green-status); border-color: var(--green-status);" title="Mantén presionado 3 segundos para finalizar y liberar la mesa">
+            <span class="hold-fill"></span>
+            <span class="hold-label">
+              <svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+              Mantener 3s: Cobrar y Liberar
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: PRE-CUENTA / TICKET DE CONTROL INTERNO (PDF + WHATSAPP) -->
+  <div class="modal-backdrop" id="receiptModal">
+    <div class="receipt-modal-card">
+      <div class="order-detail-header">
+        <div>
+          <h3 style="font-family: var(--font-heading); font-size: 1.02rem; font-weight: 800;">Pre-cuenta / Ticket de Control Interno</h3>
+          <span id="receiptHeaderSub" style="font-size: 0.72rem; color: var(--text-muted);">Documento interno sin valor tributario • Generación rápida en PDF y WhatsApp</span>
+        </div>
+        <button class="modal-close" onclick="closeReceiptModal()">&times;</button>
+      </div>
+
+      <div class="receipt-layout-grid">
+        <!-- VISTA PREVIA TERMICA -->
+        <div class="thermal-slip" id="receiptThermalSlip">
+          <div class="thermal-center">
+            <div class="thermal-brand">ESPADAZO MARINO</div>
+            <div>Barra Marina Artesanal • Lima, Perú</div>
+            <div>Tel: +51 987 654 321</div>
+          </div>
+
+          <div class="thermal-rule-thick"></div>
+          <div class="thermal-center" style="font-weight:800;">
+            <div>PRE-CUENTA / TICKET INTERNO</div>
+            <div id="rcpNumber">T001 - 00004813</div>
+          </div>
+          <div class="thermal-rule-thick"></div>
+
+          <div class="thermal-row"><span>FECHA Y HORA:</span><strong id="rcpDate">--</strong></div>
+          <div class="thermal-row"><span>CLIENTE:</span><strong id="rcpCustomer">CLIENTES VARIOS</strong></div>
+          <div class="thermal-row"><span>DOC REF:</span><strong id="rcpDoc">00000000</strong></div>
+          <div class="thermal-row"><span>MODO CONSUMO:</span><strong id="rcpMode">MESA 1</strong></div>
+          <div class="thermal-row"><span>TURNO:</span><strong>ADMIN • CONTROL INTERNO</strong></div>
+
+          <div class="thermal-rule-dash"></div>
+          <table class="thermal-items-tbl">
+            <thead>
+              <tr>
+                <th>CANT</th>
+                <th>DESCRIPCIÓN</th>
+                <th style="text-align:right;">P.U</th>
+                <th style="text-align:right;">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody id="rcpItemsBody"></tbody>
+          </table>
+          <div class="thermal-rule-dash"></div>
+
+          <div class="thermal-row"><span>BASE REF. (sin IGV):</span><strong id="rcpSubtotal">S/ 0.00</strong></div>
+          <div class="thermal-row"><span>IGV REF. (18% incl.):</span><strong id="rcpIgv">S/ 0.00</strong></div>
+          <div class="thermal-row"><span>DESCUENTO PROMO:</span><strong>- S/ 0.00</strong></div>
+          <div class="thermal-rule-dash"></div>
+          <div class="thermal-row" style="font-size:0.95rem; font-weight:800;">
+            <span>TOTAL CONSUMO:</span>
+            <span id="rcpTotal">S/ 0.00</span>
+          </div>
+          <div class="thermal-rule-dash"></div>
+
+          <div class="thermal-row"><span>FORMA DE PAGO:</span><strong id="rcpPayMethod">YAPE / PLIN</strong></div>
+          <div class="thermal-row"><span>REF. INTERNA:</span><strong id="rcpOpNum">#OP-000000</strong></div>
+          <div class="thermal-row"><span>CONTROL:</span><strong style="color:#047857;">CANCELADO EN LOCAL</strong></div>
+
+          <div class="thermal-qr-wrap">
+            <svg id="rcpQrSvg" width="64" height="64" viewBox="0 0 21 21" style="border:2px solid #111827; padding:3px; background:#FFF; flex-shrink:0;">
+              <rect x="1" y="1" width="6" height="6" fill="#111827"/><rect x="2.5" y="2.5" width="3" height="3" fill="#FFF"/><rect x="3.5" y="3.5" width="1" height="1" fill="#111827"/>
+              <rect x="14" y="1" width="6" height="6" fill="#111827"/><rect x="15.5" y="2.5" width="3" height="3" fill="#FFF"/><rect x="16.5" y="3.5" width="1" height="1" fill="#111827"/>
+              <rect x="1" y="14" width="6" height="6" fill="#111827"/><rect x="2.5" y="15.5" width="3" height="3" fill="#FFF"/><rect x="3.5" y="16.5" width="1" height="1" fill="#111827"/>
+              <rect x="9" y="2" width="2" height="2" fill="#111827"/><rect x="11" y="5" width="2" height="2" fill="#111827"/>
+              <rect x="9" y="9" width="3" height="3" fill="#111827"/><rect x="14" y="10" width="2" height="3" fill="#111827"/>
+              <rect x="10" y="15" width="3" height="2" fill="#111827"/><rect x="15" y="15" width="4" height="4" fill="#111827"/>
+            </svg>
+            <div style="font-size:0.62rem; line-height:1.3;">
+              <div style="font-weight:800;">DOCUMENTO SIN VALOR TRIBUTARIO</div>
+              <div style="color:#4B5563;">Ticket de control interno. Solicite su Boleta o Factura oficial en caja (SUNAT SOL / App Emprender).</div>
+              <div id="rcpHash" style="color:#6B7280; margin-top:2px;">REF: --</div>
+            </div>
+          </div>
+
+          <div class="thermal-rule-dash"></div>
+          <div class="thermal-center" style="font-size:0.63rem; color:#4B5563;">
+            <strong style="color:#111827;">¡GRACIAS POR VISITAR ESPADAZO MARINO!</strong><br>
+            Pesca fresca del día • Salteado al instante
+          </div>
+        </div>
+
+        <!-- PANEL DERECHO: DATOS CLIENTE + DESCARGA PDF + ENVIO WHATSAPP -->
+        <div class="receipt-actions-pane">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-family:var(--font-heading); font-weight:800; font-size:0.88rem; color:var(--text-main);">
+              Envío al Cliente &amp; Formato PDF
+            </div>
+            <div>
+              <label style="display:block; font-size:0.68rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">Nombre / Razón Social</label>
+              <input type="text" id="rcpInputName" value="CLIENTES VARIOS" oninput="syncReceiptPreviewMeta()" style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.78rem;">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div>
+                <label style="display:block; font-size:0.68rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">DNI / RUC (Ref.)</label>
+                <input type="text" id="rcpInputDoc" value="00000000" oninput="syncReceiptPreviewMeta()" style="width:100%; padding:7px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.78rem;">
+              </div>
+              <div>
+                <label style="display:block; font-size:0.68rem; font-weight:700; color:var(--text-muted); margin-bottom:4px;">Forma de Pago</label>
+                <select id="rcpInputPay" onchange="syncReceiptPreviewMeta()" style="width:100%; padding:7px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.78rem;">
+                  <option value="YAPE / PLIN">Yape / Plin</option>
+                  <option value="EFECTIVO">Efectivo</option>
+                  <option value="VISA / MASTERCARD">Visa / Mastercard</option>
+                </select>
+              </div>
+            </div>
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 10px 12px;">
+              <label style="display:block; font-size:0.7rem; font-weight:800; color:var(--green-status); margin-bottom:4px;">Número de WhatsApp del Cliente</label>
+              <input type="tel" id="rcpInputPhone" placeholder="Ej: 987654321 o 51987654321" style="width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.84rem; font-weight:700; background:var(--surface); color:var(--text-main);">
+              <div style="font-size:0.64rem; color:var(--text-muted); margin-top:4px;">Al pulsar Enviar, se descargará el PDF en tu equipo (sin sobrecargar el servidor) y se abrirá WhatsApp directo al cliente con el enlace del ticket.</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button class="btn-dl-pdf" onclick="downloadCurrentReceiptPdf()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              Descargar Ticket PDF (Local)
+            </button>
+            <button class="btn-action" style="justify-content:center;" onclick="printCurrentReceiptSlip()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+              Imprimir en Ticketera
+            </button>
+            <button class="btn-wa-pdf" onclick="sendReceiptViaWhatsApp()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>
+              Enviar PDF por WhatsApp
+            </button>
+            <button class="btn-action" style="justify-content:center;" onclick="closeReceiptModal()">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
