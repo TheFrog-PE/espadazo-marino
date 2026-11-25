@@ -701,6 +701,15 @@ def pull_cloud_updates(conn, min_interval: float = 3.0) -> bool:
             if local_dishes_cnt > 0:
                 return _push_all_local_to_cloud(conn) > 0
 
+        # En Vercel (serverless) Supabase es la unica fuente de verdad: se eliminan
+        # registros locales (semilla db.json / restos) que ya no existen en la nube.
+        if IS_SERVERLESS:
+            for tbl in ("dishes", "tables", "orders", "receipts"):
+                remote_ids = {str(x["id"]) for x in remote[tbl]}
+                for lr in conn.execute(f"SELECT id FROM {tbl}").fetchall():
+                    if str(lr["id"]) not in remote_ids:
+                        conn.execute(f"DELETE FROM {tbl} WHERE id = ?", (lr["id"],))
+
         for d in remote["dishes"]:
             _upsert_local_dish(conn, d)
         for t in remote["tables"]:
@@ -717,6 +726,9 @@ def pull_cloud_updates(conn, min_interval: float = 3.0) -> bool:
             qname = str(q.get("name") or "")
             qval = int(q.get("val") or 0)
             if qname:
+                if IS_SERVERLESS:
+                    conn.execute("INSERT OR REPLACE INTO sequences (name, val) VALUES (?, ?)", (qname, qval))
+                    continue
                 cur_row = conn.execute("SELECT val FROM sequences WHERE name = ?", (qname,)).fetchone()
                 cur_val = int(cur_row["val"]) if cur_row else 0
                 if qval > cur_val:
